@@ -2,15 +2,20 @@ package fr.valquev.mypov;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMapOptions;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+
+    private GoogleMap mapInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,10 +28,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onMapReady(GoogleMap map) {
-        // Add a marker in Sydney, Australia, and move the camera
+        mapInstance = map;
         LatLng sydney = new LatLng(-34, 151);
-        map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mapInstance.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mapInstance.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    }
+
+    public void fabClicked(View v) {
+        if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
+            mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        } else if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_HYBRID) {
+            mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        }
     }
 
     /*@Override
