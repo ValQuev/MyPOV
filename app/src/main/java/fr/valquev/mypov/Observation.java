@@ -6,7 +6,7 @@ package fr.valquev.mypov;
 public class Observation {
 
     private int id;
-    private long publidate;
+    //private long publidate;
     private double lat;
     private double lng;
     private int id_user;
@@ -17,9 +17,9 @@ public class Observation {
         return id;
     }
 
-    public long getPublidate() {
+    /*public long getPublidate() {
         return publidate;
-    }
+    }*/
 
     public double getLat() {
         return lat;
