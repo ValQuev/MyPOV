@@ -13,19 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
-
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.List;
 
 import fr.valquev.mypov.fragments.Map;
-import retrofit.Callback;
-import retrofit.Response;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -39,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private CharSequence mTitle;
     private int mNavItemId;
 
+    private Menu navMenu;
 
     private Fragment mapFragment;
 
@@ -97,7 +87,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
+        navMenu = menu;
         return true;
     }
 
@@ -130,6 +121,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             case R.id.drawer_parametres:
                 newFragment = mapFragment;
+                break;
+
+            case R.id.drawer_satellite:
+                newFragment = mapFragment;
+                ((Map) mapFragment).toggleView();
+                navigate(R.id.drawer_map);
+                onNavigationItemSelected(((NavigationView) findViewById(R.id.navigation)).getMenu().getItem(0));
                 break;
 
             default:

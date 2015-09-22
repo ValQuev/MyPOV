@@ -2,6 +2,7 @@ package fr.valquev.mypov.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,5 +72,15 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                 Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    public void toggleView() {
+        if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
+            mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_normal_view));
+        } else if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_HYBRID) {
+            mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_satellite_view));
+        }
     }
 }
