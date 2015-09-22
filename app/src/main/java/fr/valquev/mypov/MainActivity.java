@@ -1,5 +1,6 @@
 package fr.valquev.mypov;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -35,12 +36,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
-    public void fabClicked(View v) {
+    public void changeMap(View v) {
         if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         } else if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_HYBRID) {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         }
+    }
+
+    public void fabClicked(View v) {
+        Intent intent = new Intent(this, ObservationView.class);
+        startActivity(intent);
     }
 
     /*@Override

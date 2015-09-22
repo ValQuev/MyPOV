@@ -3,4 +3,8 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_observation">Observation</string>
+    <string name="add_observation">Ajouter une observation</string>
+    <string name="observation_field1">Nom de l\'observation</string>
+    <string name="observation_field2">Description</string>
 </resources>

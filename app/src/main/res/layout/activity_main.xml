@@ -25,7 +25,7 @@
         android:layout_marginEnd="15dp"
         app:backgroundTint="#F2F2F2"
         android:onClick="fabClicked"
-        android:src="@drawable/ic_satellite_black_24dp"
+        android:src="@drawable/ic_add_black_24dp"
         android:layout_marginBottom="15dp" />
 
 </RelativeLayout>
