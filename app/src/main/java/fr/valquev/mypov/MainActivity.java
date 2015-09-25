@@ -1,72 +1,143 @@
 package fr.valquev.mypov;
 
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.view.View;
+import android.os.Handler;
+import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import fr.valquev.mypov.fragments.Map;
 
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private GoogleMap mapInstance;
+    private static final long DRAWER_CLOSE_DELAY_MS = 0;
+    private static final String NAV_ITEM_ID = "navItemId";
+
+    private final Handler mDrawerActionHandler = new Handler();
+    private ActionBarDrawerToggle mDrawerToggle;
+    private DrawerLayout mDrawerLayout;
+    private Context mContext;
+    private CharSequence mTitle;
+    private int mNavItemId;
+
+    private Menu navMenu;
+
+    private Fragment mapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.mypov);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        mContext = this;
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
+
+        mapFragment = Map.instantiate(mContext, Map.class.getName());
+
+        if(savedInstanceState == null) {
+            mNavItemId = R.id.drawer_map;
+        } else {
+            mNavItemId = savedInstanceState.getInt(NAV_ITEM_ID);
+        }
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        navigationView.getMenu().findItem(mNavItemId).setChecked(true);
+        mTitle = navigationView.getMenu().findItem(mNavItemId).getTitle();
+
+        mDrawerToggle = new ActionBarDrawerToggle(this,
+                mDrawerLayout,
+                (Toolbar) findViewById(R.id.main_toolbar),
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerToggle.syncState();
+
+        navigate(mNavItemId);
     }
 
     @Override
-    public void onMapReady(GoogleMap map) {
-        mapInstance = map;
-        LatLng sydney = new LatLng(-34, 151);
-        mapInstance.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mapInstance.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    public boolean onNavigationItemSelected(final MenuItem menuItem) {
+        menuItem.setChecked(true);
+        mNavItemId = menuItem.getItemId();
+        mTitle = menuItem.getTitle();
+
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        mDrawerActionHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                navigate(menuItem.getItemId());
+            }
+        }, DRAWER_CLOSE_DELAY_MS);
+
+        return true;
     }
 
-    public void changeMap(View v) {
-        if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
-            mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        } else if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_HYBRID) {
-            mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        }
-    }
-
-    public void fabClicked(View v) {
-        Intent intent = new Intent(this, ObservationView.class);
-        startActivity(intent);
-    }
-
-    /*@Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
+        navMenu = menu;
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id) {
+            case R.id.action_settings:
+                //startActivity(new Intent(mContext, Settings.class));
+                break;
+
+            default:
+                return mDrawerToggle.onOptionsItemSelected(item);
         }
 
         return super.onOptionsItemSelected(item);
-    }*/
+    }
+
+    private void navigate(int itemId) {
+        Fragment newFragment;
+        switch (itemId) {
+            case R.id.drawer_map:
+                newFragment = mapFragment;
+                break;
+
+            case R.id.drawer_observations:
+                newFragment = mapFragment;
+                break;
+
+            case R.id.drawer_parametres:
+                newFragment = mapFragment;
+                break;
+
+            case R.id.drawer_satellite:
+                newFragment = mapFragment;
+                ((Map) mapFragment).toggleView();
+                navigate(R.id.drawer_map);
+                onNavigationItemSelected(((NavigationView) findViewById(R.id.navigation)).getMenu().getItem(0));
+                break;
+
+            default:
+                newFragment = mapFragment;
+                break;
+        }
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, newFragment).commit();
+        ActionBar ab = getSupportActionBar();
+        if(ab != null) {
+            ab.setTitle(mTitle);
+        }
+    }
 }
