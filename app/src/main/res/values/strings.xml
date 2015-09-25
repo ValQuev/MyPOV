@@ -6,4 +6,6 @@
     <string name="action_settings">Paramètres</string>
     <string name="action_satellite_view">Vue satellite</string>
     <string name="action_normal_view">Vue normale</string>
+    <string name="observation_field1">Nom de l'observation</string>
+    <string name="observation_field2">Description</string>
 </resources>
