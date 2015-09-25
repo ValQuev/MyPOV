@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">MyPOV</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_map">Carte</string>
+    <string name="action_my_observations">Mes observations</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="action_satellite_view">Vue satellite</string>
+    <string name="action_normal_view">Vue normale</string>
     <string name="observation_field1">Nom de l'observation</string>
     <string name="observation_field2">Description</string>
-
 </resources>
