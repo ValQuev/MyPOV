@@ -1,17 +1,6 @@
 <resources>
     <string name="app_name">MyPOV</string>
 
-    <string name="navigate">Navigation</string>
-    <string name="action_settings">Paramètres</string>
-    <string name="action_map">Carte</string>
-    <string name="action_my_observations">Mes observations</string>
-    <string name="action_satellite_view">Vue satellite</string>
-    <string name="action_normal_view">Vue normale</string>
-    <string name="navigation_drawer_open">Ouvrir le menu de navigation</string>
-    <string name="navigation_drawer_close">Fermer le menu de navigation</string>
-    <string name="title_activity_observation">Observation</string>
-    <string name="add_observation">Ajouter une observation</string>
-    <string name="observation_field1">Nom de l\'observation</string>
-    <string name="observation_field2">Description</string>
-
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 </resources>

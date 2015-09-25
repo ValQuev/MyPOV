@@ -56,9 +56,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mapInstance = googleMap;
-
         mapInstance.setMyLocationEnabled(true);
-
         mapInstance.getUiSettings().setMapToolbarEnabled(false);
 
         MyPOVClient.client.getObservations().enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
