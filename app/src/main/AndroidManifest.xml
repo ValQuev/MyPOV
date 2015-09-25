@@ -24,8 +24,12 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyB4r0EOs_Kns9B-2zB8Gi9KCldulfrBGic"/>
+            android:value="AIzaSyDEJDlzIF3hx911Uaxs_Ze2r3s8_jUO5kE" />
 
+        <activity
+            android:name=".activities.AddObservation"
+            android:label="@string/title_activity_observation" >
+        </activity>
     </application>
 
 </manifest>

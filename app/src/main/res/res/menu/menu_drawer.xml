@@ -15,7 +15,7 @@
             android:title="@string/action_settings"/>
         <item
             android:id="@+id/drawer_satellite"
-            android:icon="@drawable/ic_satellite_black_24dp"
+            android:checkable="true"
             android:title="@string/action_satellite_view"/>
     </group>
 </menu>
