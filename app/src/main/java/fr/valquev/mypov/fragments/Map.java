@@ -1,6 +1,7 @@
 package fr.valquev.mypov.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
 import fr.valquev.mypov.R;
+import fr.valquev.mypov.activities.AddObservation;
 import retrofit.Callback;
 import retrofit.Response;
 
@@ -43,6 +45,12 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
         ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
 
         // Ici on met les listeners pour les widgets et les textview.setText("coucou"); etc...
+        view.findViewById(R.id.fab_add_observation).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(mContext, AddObservation.class));
+            }
+        });
     }
 
     @Override
@@ -50,6 +58,8 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
         mapInstance = googleMap;
 
         mapInstance.setMyLocationEnabled(true);
+
+        mapInstance.getUiSettings().setMapToolbarEnabled(false);
 
         MyPOVClient.client.getObservations().enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
             @Override
@@ -77,10 +87,10 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
     public void toggleView() {
         if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_normal_view));
+            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_normal_view)).setIcon(getResources().getDrawable(R.drawable.ic_layers_black_24dp));
         } else if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_HYBRID) {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_satellite_view));
+            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_satellite_view)).setIcon(getResources().getDrawable(R.drawable.ic_satellite_black_24dp));
         }
     }
 }

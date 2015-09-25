@@ -1,17 +1,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="fr.valquev.mypov.ObservationView">
+    android:layout_height="match_parent"
+    tools:context="fr.valquev.mypov.activities.AddObservation">
+
+    <include layout="@layout/toolbar"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:orientation="vertical"
-        android:weightSum="2">
+        android:weightSum="2"
+        android:layout_marginTop="?attr/actionBarSize">
 
         <ScrollView
             xmlns:android="http://schemas.android.com/apk/res/android"
@@ -23,14 +23,6 @@
                 android:layout_height="0dp"
                 android:layout_alignParentBottom="true"
                 android:orientation="vertical">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/add_observation"
-                android:layout_gravity="center_horizontal"
-                android:textSize="25dp"
-                android:paddingBottom="15dp"
-                android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
