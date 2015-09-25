@@ -6,6 +6,9 @@
     <string name="action_settings">Paramètres</string>
     <string name="action_satellite_view">Vue satellite</string>
     <string name="action_normal_view">Vue normale</string>
-    <string name="observation_field1">Nom de l'observation</string>
+    <string name="observation_field1">Nom de l\'observation</string>
     <string name="observation_field2">Description</string>
+    <string name="title_activity_observation">Ajouter une observation</string>
+    <string name="navigation_drawer_open">Ouvrir le menu de navigation</string>
+    <string name="navigation_drawer_close">Fermer le menu de navigation</string>
 </resources>
