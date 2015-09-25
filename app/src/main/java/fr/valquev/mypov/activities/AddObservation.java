@@ -30,6 +30,7 @@ public class AddObservation extends AppCompatActivity implements OnMapReadyCallb
     @Override
     public void onMapReady(GoogleMap map) {
         observation = new LatLng(48, 4);
+
         map.addMarker(observation_marker.position(observation).title("Lieu marqué").draggable(true));
         map.moveCamera(CameraUpdateFactory.newLatLng(observation));
     }
