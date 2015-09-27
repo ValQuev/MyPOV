@@ -2,17 +2,22 @@ package fr.valquev.mypov.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.List;
@@ -22,6 +27,7 @@ import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.activities.AddObservation;
+import fr.valquev.mypov.activities.ObservationDetails;
 import retrofit.Callback;
 import retrofit.Response;
 
@@ -29,10 +35,13 @@ import retrofit.Response;
  * Created by ValQuev on 22/09/15.
  */
 
-public class Map extends BaseFragment implements OnMapReadyCallback {
+public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
 
     private Context mContext;
     private GoogleMap mapInstance;
+    private CoordinatorLayout layout;
+
+    private List<Observation> observationList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -44,7 +53,8 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
 
-        // Ici on met les listeners pour les widgets et les textview.setText("coucou"); etc...
+        layout = (CoordinatorLayout) view.findViewById(R.id.layout_map);
+
         view.findViewById(R.id.fab_add_observation).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,14 +68,22 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
         mapInstance = googleMap;
         mapInstance.setMyLocationEnabled(true);
         mapInstance.getUiSettings().setMapToolbarEnabled(false);
+        mapInstance.setOnInfoWindowClickListener(this);
 
-        MyPOVClient.client.getObservations().enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
+        MyPOVClient.client.getObservations(48.078515, -0.766991, 100).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
             @Override
             public void onResponse(Response<MyPOVResponse<List<Observation>>> response) {
                 if (response.isSuccess()) {
                     if (response.body().getStatus() == 0) {
-                        for (Observation observation : response.body().getObject()) {
-                            mapInstance.addMarker(new MarkerOptions().position(new LatLng(observation.getLat(), observation.getLng())).title(observation.getNom()));
+                        observationList = response.body().getObject();
+                        if(observationList != null) {
+                            for (Observation observation : observationList) {
+                                mapInstance.addMarker(new MarkerOptions().position(new LatLng(observation.getLat(), observation.getLng())).title(observation.getNom()));
+                            }
+                        } else {
+                            Snackbar.make(layout, "Aucune observation à proximité", Snackbar.LENGTH_LONG)
+                                    .setAction("Ok", null)
+                                    .show();
                         }
                     } else {
                         Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
@@ -90,5 +108,16 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
             ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_satellite_view)).setIcon(getResources().getDrawable(R.drawable.ic_satellite_black_24dp));
         }
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        int position = Integer.parseInt(marker.getId().replace("m", ""));
+
+        Observation observationClicked = observationList.get(position);
+
+        Intent intent = new Intent(mContext, ObservationDetails.class);
+        intent.putExtra("observation", observationClicked);
+        startActivity(intent);
     }
 }
