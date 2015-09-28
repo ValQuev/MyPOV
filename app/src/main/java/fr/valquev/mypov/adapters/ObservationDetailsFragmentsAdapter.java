@@ -1,4 +1,4 @@
-package fr.valquev.mypov.activities;
+package fr.valquev.mypov.adapters;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;

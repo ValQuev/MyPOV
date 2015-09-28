@@ -14,7 +14,6 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:id="@+id/observation_details_toolbar"
-            app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
         <android.support.design.widget.TabLayout
@@ -29,5 +28,16 @@
         android:layout_height="match_parent"
         android:id="@+id/observation_details_viewpager"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_observation_details_add_comment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:tint="@color/white"
+        android:layout_gravity="right|bottom"
+        android:src="@drawable/ic_add_black_24dp"
+        android:layout_marginBottom="@dimen/activity_vertical_margin" />
 
 </android.support.design.widget.CoordinatorLayout>

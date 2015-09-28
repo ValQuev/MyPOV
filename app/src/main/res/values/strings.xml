@@ -11,4 +11,7 @@
     <string name="title_activity_observation">Ajouter une observation</string>
     <string name="navigation_drawer_open">Ouvrir le menu de navigation</string>
     <string name="navigation_drawer_close">Fermer le menu de navigation</string>
+    <string name="description_up">DESCRIPTION</string>
+    <string name="comments_up">COMMENTAIRES</string>
+    <string name="login">Connexion</string>
 </resources>
