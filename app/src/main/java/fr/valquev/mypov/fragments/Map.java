@@ -92,9 +92,6 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
                         }
                     } else {
                         Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
-                        mUser.logout();
-                        startActivity(new Intent(mContext, Login.class));
-                        ((MyPOV) mContext).finish();
                     }
                 } else {
                     Toast.makeText(mContext, response.code() + " - " + response.message(), Toast.LENGTH_LONG).show();
