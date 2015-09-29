@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
+            android:name=".MyPOV"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,14 +22,20 @@
             </intent-filter>
         </activity>
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDEJDlzIF3hx911Uaxs_Ze2r3s8_jUO5kE" />
-
         <activity
             android:name=".activities.AddObservation"
-            android:label="@string/title_activity_observation" >
-        </activity>
+            android:label="@string/title_activity_observation" />
+
+        <activity
+            android:name=".activities.ObservationDetails" />
+
+        <activity
+            android:name=".activities.Login"
+            android:label="@string/login"/>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyB4r0EOs_Kns9B-2zB8Gi9KCldulfrBGic" />
     </application>
 
 </manifest>
