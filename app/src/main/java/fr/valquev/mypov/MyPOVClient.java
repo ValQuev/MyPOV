@@ -31,4 +31,8 @@ public interface MyPOVClient {
     @FormUrlEncoded
     @POST("getCommentaires.php")
     Call<MyPOVResponse<List<Comment>>> getComments(@Field("id_obs") int id_obs, @Field("mail") String mail, @Field("pwd") String password);
+
+    @FormUrlEncoded
+    @POST("addCommentaire.php")
+    Call<MyPOVResponse<String>> addComment(@Field("id_obs") int id_obs, @Field("texte") String texte, @Field("mail") String mail, @Field("pwd") String password);
 }

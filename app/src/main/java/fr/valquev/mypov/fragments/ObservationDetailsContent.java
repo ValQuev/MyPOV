@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import fr.valquev.mypov.Observation;
 import fr.valquev.mypov.R;
@@ -26,6 +27,8 @@ public class ObservationDetailsContent extends BaseFragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        TextView texte = (TextView) view.findViewById(R.id.observation_content_text);
 
+        texte.setText(mObservation.getDescription());
     }
 }

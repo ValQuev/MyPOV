@@ -1,20 +1,31 @@
 package fr.valquev.mypov.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import fr.valquev.mypov.MyPOVClient;
+import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
 import fr.valquev.mypov.R;
+import fr.valquev.mypov.User;
 import fr.valquev.mypov.adapters.ObservationDetailsFragmentsAdapter;
 import fr.valquev.mypov.fragments.ObservationDetailsComments;
 import fr.valquev.mypov.fragments.ObservationDetailsContent;
+import retrofit.Callback;
+import retrofit.Response;
 
 /**
  * Created by ValQuev on 27/09/15.
@@ -27,6 +38,7 @@ public class ObservationDetails extends AppCompatActivity {
     private FloatingActionButton addCommentFAB;
 
     private Observation mObservation;
+    private User mUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +46,13 @@ public class ObservationDetails extends AppCompatActivity {
         setContentView(R.layout.activity_observation_details);
 
         mContext = this;
+        mUser = new User(mContext);
+
+        if (!mUser.isLogged()) {
+            startActivity(new Intent(mContext, Login.class));
+            finish();
+        }
+
         mObservation = getIntent().getParcelableExtra("observation");
 
         mViewPager = (ViewPager) findViewById(R.id.observation_details_viewpager);
@@ -44,6 +63,53 @@ public class ObservationDetails extends AppCompatActivity {
 
         toolbar.setTitle(mObservation.getNom() + " par " + mObservation.getObservateur().getPseudo());
         setSupportActionBar(toolbar);
+
+        addCommentFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
+                final View v = getLayoutInflater().inflate(R.layout.observation_details_comments_write, null);
+                builder.setView(v);
+                builder.setMessage(mObservation.getNom());
+                builder.setPositiveButton("Commenter", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        EditText commentET = (EditText) v.findViewById(R.id.observation_details_add_comment_text);
+
+                        String comment = commentET.getText().toString();
+
+                        if(comment.equals("")) {
+                            commentET.setError("Vide");
+                            return;
+                        }
+
+                        MyPOVClient.client.addComment(mObservation.getId(), comment, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                            @Override
+                            public void onResponse(Response<MyPOVResponse<String>> response) {
+                                if (response.isSuccess()) {
+                                    if (response.body().getStatus() == 0) {
+
+                                    } else {
+                                        Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                                        mUser.logout();
+                                        finish();
+                                    }
+                                } else {
+                                    Toast.makeText(mContext, response.code() + " - " + response.message(), Toast.LENGTH_LONG).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Throwable t) {
+                                Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                });
+                builder.setNegativeButton("Annuler", null);
+                builder.show();
+            }
+        });
 
         setAB();
 
