@@ -39,7 +39,6 @@
             android:paddingRight="16dp"
             android:maxLines="1"
             android:ellipsize="marquee"
-            android:text="François Dupont"
             android:textColor="@color/white"
             android:textAppearance="?android:attr/textAppearanceLargeInverse" />
     </LinearLayout>

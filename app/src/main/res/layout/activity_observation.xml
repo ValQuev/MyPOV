@@ -33,6 +33,7 @@
                 <EditText
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
+                    android:id="@+id/add_observation_nom_et"
                 android:inputType="text"
                     android:paddingBottom="15dp" />
 
@@ -48,13 +49,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:inputType="text"
-                    android:id="@+id/editText" />
+                    android:id="@+id/add_observation_description_et" />
 
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="OK"
-                    android:id="@+id/button"
+                    android:id="@+id/add_observation_button"
                     android:layout_gravity="center_horizontal" />
             </LinearLayout>
         </ScrollView>

@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -83,7 +85,13 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
                         mObservationList = response.body().getObject();
                         if (mObservationList != null) {
                             for (Observation observation : mObservationList) {
-                                mapInstance.addMarker(new MarkerOptions().position(new LatLng(observation.getLat(), observation.getLng())).title(observation.getNom()));
+                                BitmapDescriptor color;
+                                if (observation.getObservateur().getId_user() == mUser.getId_user()) {
+                                    color = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
+                                } else {
+                                    color = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE);
+                                }
+                                mapInstance.addMarker(new MarkerOptions().position(new LatLng(observation.getLat(), observation.getLng())).title(observation.getNom()).icon(color));
                             }
                         } else {
                             Snackbar.make(mLayout, "Aucune observation à proximité", Snackbar.LENGTH_LONG)

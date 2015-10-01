@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import fr.valquev.mypov.activities.Login;
 import fr.valquev.mypov.fragments.Map;
@@ -152,5 +153,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
             startActivity(new Intent(mContext, Login.class));
             finish();
         }
+
+        ((TextView) findViewById(R.id.drawer_header_title)).setText(mUser.getPseudo());
     }
 }

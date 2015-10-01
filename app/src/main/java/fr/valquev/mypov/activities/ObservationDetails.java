@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -40,6 +41,9 @@ public class ObservationDetails extends AppCompatActivity {
     private Observation mObservation;
     private User mUser;
 
+    private ObservationDetailsComments commentFrag;
+    private ObservationDetailsContent descriptionFrag;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +58,12 @@ public class ObservationDetails extends AppCompatActivity {
         }
 
         mObservation = getIntent().getParcelableExtra("observation");
+
+        Bundle observation = new Bundle();
+        observation.putParcelable("observation", mObservation);
+
+        descriptionFrag = (ObservationDetailsContent) ObservationDetailsContent.instantiate(mContext, ObservationDetailsContent.class.getName(), observation);
+        commentFrag = (ObservationDetailsComments) ObservationDetailsComments.instantiate(mContext, ObservationDetailsComments.class.getName(), observation);
 
         mViewPager = (ViewPager) findViewById(R.id.observation_details_viewpager);
         Toolbar toolbar = (Toolbar) findViewById(R.id.observation_details_toolbar);
@@ -78,7 +88,7 @@ public class ObservationDetails extends AppCompatActivity {
 
                         String comment = commentET.getText().toString();
 
-                        if(comment.equals("")) {
+                        if (comment.equals("")) {
                             commentET.setError("Vide");
                             return;
                         }
@@ -88,7 +98,7 @@ public class ObservationDetails extends AppCompatActivity {
                             public void onResponse(Response<MyPOVResponse<String>> response) {
                                 if (response.isSuccess()) {
                                     if (response.body().getStatus() == 0) {
-
+                                        commentFrag.getComments();
                                     } else {
                                         Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
                                         mUser.logout();
@@ -118,10 +128,8 @@ public class ObservationDetails extends AppCompatActivity {
 
     private void setupViewPager() {
         ObservationDetailsFragmentsAdapter adapter = new ObservationDetailsFragmentsAdapter(getSupportFragmentManager());
-        Bundle observation = new Bundle();
-        observation.putParcelable("observation", mObservation);
-        adapter.addFrag(ObservationDetailsContent.instantiate(mContext, ObservationDetailsContent.class.getName(), observation), getResources().getString(R.string.description_up));
-        adapter.addFrag(ObservationDetailsComments.instantiate(mContext, ObservationDetailsComments.class.getName(), observation), getResources().getString(R.string.comments_up));
+        adapter.addFrag(descriptionFrag, getResources().getString(R.string.description_up));
+        adapter.addFrag(commentFrag, getResources().getString(R.string.comments_up));
 
         mViewPager.setAdapter(adapter);
         mViewPager.setCurrentItem(0);

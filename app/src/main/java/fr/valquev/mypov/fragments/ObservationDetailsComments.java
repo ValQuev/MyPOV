@@ -71,7 +71,7 @@ public class ObservationDetailsComments extends BaseFragment {
         });
     }
 
-    private void getComments() {
+    public void getComments() {
         mSwipeRefreshLayout.setRefreshing(true);
         MyPOVClient.client.getComments(mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Comment>>>() {
             @Override
