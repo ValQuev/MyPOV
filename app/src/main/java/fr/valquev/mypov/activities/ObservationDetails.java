@@ -20,6 +20,7 @@ import android.widget.Toast;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
+import fr.valquev.mypov.ObservationPhoto;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.User;
 import fr.valquev.mypov.adapters.ObservationDetailsFragmentsAdapter;

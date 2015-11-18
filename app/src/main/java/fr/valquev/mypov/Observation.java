@@ -3,6 +3,9 @@ package fr.valquev.mypov;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by ValQuev on 17/09/15.
  */
@@ -15,15 +18,18 @@ public class Observation implements Parcelable {
     private String nom;
     private String description;
     private Observateur observateur;
+    private List<ObservationPhoto> photos;
 
     public Observation(Parcel parcel) {
         id = parcel.readInt();
         publidate = parcel.readLong();
-        lat = parcel.readLong();
-        lng = parcel.readLong();
+        lat = parcel.readDouble();
+        lng = parcel.readDouble();
         nom = parcel.readString();
         description = parcel.readString();
         observateur = parcel.readParcelable(Observateur.class.getClassLoader());
+        photos = new ArrayList<>();
+        parcel.readList(photos, getClass().getClassLoader());
     }
 
     public int getId() {
@@ -54,6 +60,10 @@ public class Observation implements Parcelable {
         return observateur;
     }
 
+    public List<ObservationPhoto> getPhotos() {
+        return photos;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -68,6 +78,7 @@ public class Observation implements Parcelable {
         parcel.writeString(nom);
         parcel.writeString(description);
         parcel.writeParcelable(observateur, PARCELABLE_WRITE_RETURN_VALUE);
+        parcel.writeList(photos);
     }
 
     public static final Parcelable.Creator<Observation> CREATOR = new Parcelable.Creator<Observation>() {

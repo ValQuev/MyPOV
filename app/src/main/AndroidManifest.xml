@@ -21,21 +21,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activities.AddObservation"
             android:label="@string/title_activity_observation" />
-
-        <activity
-            android:name=".activities.ObservationDetails" />
-
+        <activity android:name=".activities.ObservationDetails" />
         <activity
             android:name=".activities.Login"
-            android:label="@string/login"/>
+            android:label="@string/login" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyB4r0EOs_Kns9B-2zB8Gi9KCldulfrBGic" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>

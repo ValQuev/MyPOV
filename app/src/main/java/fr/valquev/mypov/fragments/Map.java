@@ -26,6 +26,7 @@ import fr.valquev.mypov.MyPOV;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
+import fr.valquev.mypov.ObservationPhoto;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.User;
 import fr.valquev.mypov.activities.AddObservation;
@@ -77,7 +78,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
         mapInstance.getUiSettings().setMapToolbarEnabled(false);
         mapInstance.setOnInfoWindowClickListener(this);
 
-        MyPOVClient.client.getObservations(48.078515, -0.766991, 100, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
+        MyPOVClient.client.getObservations(48.078515, -0.766991, 1000, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
             @Override
             public void onResponse(Response<MyPOVResponse<List<Observation>>> response) {
                 if (response.isSuccess()) {
@@ -116,10 +117,10 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
     public void toggleView() {
         if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_NORMAL) {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_normal_view)).setIcon(getResources().getDrawable(R.drawable.ic_layers_black_24dp));
+            ((NavigationView) getActivity().findViewById(R.id.mypov_navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_normal_view)).setIcon(getResources().getDrawable(R.drawable.ic_layers_black_24dp));
         } else if (mapInstance.getMapType() == GoogleMap.MAP_TYPE_HYBRID) {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-            ((NavigationView) getActivity().findViewById(R.id.navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_satellite_view)).setIcon(getResources().getDrawable(R.drawable.ic_satellite_black_24dp));
+            ((NavigationView) getActivity().findViewById(R.id.mypov_navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_satellite_view)).setIcon(getResources().getDrawable(R.drawable.ic_satellite_black_24dp));
         }
     }
 

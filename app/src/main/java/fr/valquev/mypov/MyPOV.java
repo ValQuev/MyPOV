@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import fr.valquev.mypov.activities.Login;
@@ -26,6 +27,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
 
     private final Handler mDrawerActionHandler = new Handler();
     private ActionBarDrawerToggle mDrawerToggle;
+    private View headerView;
     private DrawerLayout mDrawerLayout;
     private Context mContext;
     private User mUser;
@@ -54,11 +56,13 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
             mNavItemId = savedInstanceState.getInt(NAV_ITEM_ID);
         }
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.mypov_navigation);
         navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.getMenu().findItem(mNavItemId).setChecked(true);
         mTitle = navigationView.getMenu().findItem(mNavItemId).getTitle();
+
+        headerView = getLayoutInflater().inflate(R.layout.mypov_header, navigationView);
 
         mDrawerToggle = new ActionBarDrawerToggle(this,
                 mDrawerLayout,
@@ -131,7 +135,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                 newFragment = mapFragment;
                 ((Map) mapFragment).toggleView();
                 navigate(R.id.drawer_map);
-                onNavigationItemSelected(((NavigationView) findViewById(R.id.navigation)).getMenu().getItem(0));
+                onNavigationItemSelected(((NavigationView) findViewById(R.id.mypov_navigation)).getMenu().getItem(0));
                 break;
 
             default:
@@ -154,6 +158,10 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
             finish();
         }
 
-        ((TextView) findViewById(R.id.drawer_header_title)).setText(mUser.getPseudo());
+        displayUserInfos();
+    }
+
+    private void displayUserInfos() {
+        ((TextView) headerView.findViewById(R.id.drawer_header_title)).setText(mUser.getPseudo());
     }
 }
