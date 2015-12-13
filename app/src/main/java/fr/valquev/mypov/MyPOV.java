@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import fr.valquev.mypov.activities.Login;
+import fr.valquev.mypov.fragments.ListeObservations;
 import fr.valquev.mypov.fragments.Map;
 
 public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -35,6 +36,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
     private int mNavItemId;
 
     private Fragment mapFragment;
+    private Fragment listeObservationFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +51,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
 
         mapFragment = Map.instantiate(mContext, Map.class.getName());
+        listeObservationFragment = ListeObservations.instantiate(mContext, ListeObservations.class.getName());
 
         if(savedInstanceState == null) {
             mNavItemId = R.id.drawer_map;
@@ -123,7 +126,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                 break;
 
             case R.id.drawer_observations:
-                newFragment = mapFragment;
+                newFragment = listeObservationFragment;
                 break;
 
             case R.id.drawer_parametres:
