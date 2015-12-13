@@ -1,7 +1,5 @@
 package fr.valquev.mypov;
 
-import android.support.annotation.Nullable;
-
 /**
  * Created by ValQuev on 17/09/15.
  */

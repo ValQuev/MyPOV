@@ -16,6 +16,7 @@ import fr.valquev.mypov.User;
 import fr.valquev.mypov.Utils;
 import retrofit.Callback;
 import retrofit.Response;
+import retrofit.Retrofit;
 
 /**
  * Created by ValQuev on 28/09/15.
@@ -57,7 +58,7 @@ public class Login extends AppCompatActivity {
 
                 MyPOVClient.client.login(mMail.getText().toString(), Utils.getMd5Hash(mPassword.getText().toString())).enqueue(new Callback<MyPOVResponse<User>>() {
                     @Override
-                    public void onResponse(Response<MyPOVResponse<User>> response) {
+                    public void onResponse(Response<MyPOVResponse<User>> response, Retrofit retrofit) {
                         if (response.isSuccess()) {
                             if (response.body().getStatus() == 0) {
                                 User user = response.body().getObject();
