@@ -22,11 +22,12 @@ import fr.valquev.mypov.activities.ObservationDetails;
 import fr.valquev.mypov.adapters.ListeObservationsAdapter;
 import retrofit.Callback;
 import retrofit.Response;
+import retrofit.Retrofit;
 
 /**
  * Created by juleno on 13/12/2015.
  */
-public class ListeObservations extends BaseFragment  {
+public class ListeObservations extends BaseFragment {
 
     private Context mContext;
     private User mUser;
@@ -59,7 +60,7 @@ public class ListeObservations extends BaseFragment  {
 
         MyPOVClient.client.getObservations(48.078515, -0.766991, 1000, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
             @Override
-            public void onResponse(Response<MyPOVResponse<List<Observation>>> response) {
+            public void onResponse(Response<MyPOVResponse<List<Observation>>> response, Retrofit retrofit) {
                 if (response.isSuccess()) {
                     if (response.body().getStatus() == 0) {
                         observationsList = response.body().getObject();
