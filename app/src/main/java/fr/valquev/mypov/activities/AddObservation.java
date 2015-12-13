@@ -22,6 +22,7 @@ import fr.valquev.mypov.R;
 import fr.valquev.mypov.User;
 import retrofit.Callback;
 import retrofit.Response;
+import retrofit.Retrofit;
 
 public class AddObservation extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener {
 
@@ -81,7 +82,7 @@ public class AddObservation extends AppCompatActivity implements OnMapReadyCallb
 
                 MyPOVClient.client.addObservation(nom, description, observation.latitude, observation.longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
-                    public void onResponse(Response<MyPOVResponse<String>> response) {
+                    public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                         if (response.isSuccess()) {
                             if (response.body().getStatus() == 0) {
                                 finish();

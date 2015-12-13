@@ -24,6 +24,7 @@ import fr.valquev.mypov.activities.ObservationDetails;
 import fr.valquev.mypov.adapters.ObservationDetailsCommentsAdapter;
 import retrofit.Callback;
 import retrofit.Response;
+import retrofit.Retrofit;
 
 /**
  * Created by ValQuev on 28/09/15.
@@ -75,7 +76,7 @@ public class ObservationDetailsComments extends BaseFragment {
         mSwipeRefreshLayout.setRefreshing(true);
         MyPOVClient.client.getComments(mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Comment>>>() {
             @Override
-            public void onResponse(Response<MyPOVResponse<List<Comment>>> response) {
+            public void onResponse(Response<MyPOVResponse<List<Comment>>> response, Retrofit retrofit) {
                 if (response.isSuccess()) {
                     if (response.body().getStatus() == 0) {
                         List<Comment> commentList = response.body().getObject();

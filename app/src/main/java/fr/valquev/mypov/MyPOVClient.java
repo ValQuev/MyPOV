@@ -1,5 +1,7 @@
 package fr.valquev.mypov;
 
+import com.squareup.okhttp.RequestBody;
+
 import java.util.List;
 
 import retrofit.Call;
@@ -8,7 +10,9 @@ import retrofit.Retrofit;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
+import retrofit.http.Multipart;
 import retrofit.http.POST;
+import retrofit.http.Part;
 import retrofit.http.Query;
 
 /**
@@ -39,4 +43,8 @@ public interface MyPOVClient {
     @FormUrlEncoded
     @POST("addObservation.php")
     Call<MyPOVResponse<String>> addObservation(@Field("nom") String nom, @Field("description") String description, @Field("lat") double lat, @Field("lng") double lng, @Field("mail") String mail, @Field("pwd") String password);
+
+    @Multipart
+    @POST("addPhotoObservation.php")
+    Call<MyPOVResponse<String>> addPhotoObservation(@Part("img\"; filename=\"image.jpg\" ") RequestBody file, @Part("id_obs") int id_obs, @Part("mail") String mail, @Part("pwd") String password);
 }
