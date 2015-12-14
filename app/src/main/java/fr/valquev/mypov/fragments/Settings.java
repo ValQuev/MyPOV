@@ -13,7 +13,7 @@ import fr.valquev.mypov.activities.Login;
 import fr.valquev.mypov.activities.ObservationDetails;
 
 /**
- * Created by julen on 14/12/2015.
+ * Created by juleno on 14/12/2015.
  */
 public class Settings extends BaseFragment {
 
