@@ -20,6 +20,7 @@ import android.widget.TextView;
 import fr.valquev.mypov.activities.Login;
 import fr.valquev.mypov.fragments.ListeObservations;
 import fr.valquev.mypov.fragments.Map;
+import fr.valquev.mypov.fragments.Settings;
 
 public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -37,6 +38,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
 
     private Fragment mapFragment;
     private Fragment listeObservationFragment;
+    private Fragment settingsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
 
         mapFragment = Map.instantiate(mContext, Map.class.getName());
         listeObservationFragment = ListeObservations.instantiate(mContext, ListeObservations.class.getName());
+        settingsFragment = Settings.instantiate(mContext, Settings.class.getName());
 
         if(savedInstanceState == null) {
             mNavItemId = R.id.drawer_map;
@@ -130,7 +133,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                 break;
 
             case R.id.drawer_parametres:
-                newFragment = mapFragment;
+                newFragment = settingsFragment;
                 //startActivity(new Intent(mContext, Settings.class));
                 break;
 
