@@ -1,2 +1,3 @@
 # MyPOV
-Projet tutoré S3 de l'IUT de Laval du crew
+Projet tutoré S3
+Département informatique de l'IUT de Laval
