@@ -8,7 +8,7 @@
         <item
             android:id="@+id/drawer_observations"
             android:icon="@drawable/ic_explore_black_24dp"
-            android:title="@string/action_my_observations"/>
+            android:title="@string/action_observations"/>
         <item
             android:id="@+id/drawer_parametres"
             android:icon="@drawable/ic_settings_black_24dp"

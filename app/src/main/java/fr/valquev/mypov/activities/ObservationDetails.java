@@ -4,10 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -15,6 +19,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,7 +30,9 @@ import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
@@ -205,16 +212,26 @@ public class ObservationDetails extends AppCompatActivity {
 
         switch(id) {
             case 0:
-                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                getIntent.setType("image/*");
-
-                Intent pickIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                pickIntent.setType("image/*");
-
-                Intent chooserIntent = Intent.createChooser(getIntent, "Sélectionnez une image");
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{pickIntent});
-
-                startActivityForResult(chooserIntent, PICK_IMAGE);
+                if (item.getTitle().equals("Ajouter une photo")) {
+                    Intent intent = new Intent();
+                    // Show only images, no videos or anything else
+                    intent.setType("image/*");
+                    intent.setAction(Intent.ACTION_GET_CONTENT);
+                    // Always show the chooser (if there are multiple options available)
+                    startActivityForResult(Intent.createChooser(intent, "Sélectionnez une image"), PICK_IMAGE);
+                } else {
+                    try {
+                        Uri gmmIntentUri = Uri.parse("google.navigation:q="+ mObservation.getLat() +","+ mObservation.getLng());
+                        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                        mapIntent.setPackage("com.google.android.apps.maps");
+                        startActivity(mapIntent);
+                    } catch (Exception e) {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.maps"));
+                        startActivity(i);
+                        Toast.makeText(mContext, "Veuillez installer Google Maps", Toast.LENGTH_SHORT).show();
+                    }
+                }
                 break;
 
             case android.R.id.home:
@@ -230,6 +247,7 @@ public class ObservationDetails extends AppCompatActivity {
         //if (mObservation.getObservateur().getId_user() == mUser.getId_user()) {
             menu.add("Ajouter une photo");
         //}
+        menu.add("Itinéraire");
         return true;
     }
 
@@ -261,7 +279,13 @@ public class ObservationDetails extends AppCompatActivity {
                 userPic.compress(Bitmap.CompressFormat.PNG, 100, out);
                 byte[] myByteArray = out.toByteArray();
 
-                RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), myByteArray);
+                final File pic = new File(getApplicationContext().getFileStreamPath("test.jpg").getPath());
+                pic.createNewFile();
+                out.writeTo(new FileOutputStream(pic));
+
+                Log.v("TEST", "TEST " + pic.getPath());
+
+                RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), pic);
 
                 MyPOVClient.client.addPhotoObservation(requestBody, mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
@@ -274,6 +298,7 @@ public class ObservationDetails extends AppCompatActivity {
                                 mUser.logout();
                                 finish();
                             }
+                            pic.delete();
                         } else {
                             Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
                         }
@@ -318,5 +343,45 @@ public class ObservationDetails extends AppCompatActivity {
         o2.inSampleSize = scale;
         return BitmapFactory.decodeStream(mContext.getContentResolver().openInputStream(selectedImage), null, o2);
 
+    }
+
+    public String getRealPathFromURI(Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = mContext.getContentResolver().query(contentUri, proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    public String getFileNameByUri(Uri uri)
+    {
+        String fileName="unknown";//default fileName
+        Uri filePathUri = uri;
+        if (uri.getScheme().toString().compareTo("content")==0)
+        {
+            Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
+            if (cursor.moveToFirst())
+            {
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);//Instead of "MediaStore.Images.Media.DATA" can be used "_data"
+                filePathUri = Uri.parse(cursor.getString(column_index));
+                fileName = filePathUri.getLastPathSegment().toString();
+            }
+        }
+        else if (uri.getScheme().compareTo("file")==0)
+        {
+            fileName = filePathUri.getLastPathSegment().toString();
+        }
+        else
+        {
+            fileName = fileName+"_"+filePathUri.getLastPathSegment();
+        }
+        return fileName;
     }
 }

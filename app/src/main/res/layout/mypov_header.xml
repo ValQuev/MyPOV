@@ -22,11 +22,11 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 
-        <ImageView
+        <!--<ImageView
             android:layout_width="@dimen/pp"
             android:layout_height="@dimen/pp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:src="@drawable/avatar_default" />
+            android:src="@drawable/avatar_default" />-->
 
         <TextView
             android:layout_width="match_parent"

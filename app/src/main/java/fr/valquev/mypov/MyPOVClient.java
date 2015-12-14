@@ -47,4 +47,8 @@ public interface MyPOVClient {
     @Multipart
     @POST("addPhotoObservation.php")
     Call<MyPOVResponse<String>> addPhotoObservation(@Part("img\"; filename=\"image.jpg\" ") RequestBody file, @Part("id_obs") int id_obs, @Part("mail") String mail, @Part("pwd") String password);
+
+    /*@FormUrlEncoded
+    @POST("selkfjmsefjs.php")
+    Call<MyPOVResponse<MyPOVNote>> setNote(@Field("id_obs") int id_obs);*/
 }
