@@ -1,17 +1,13 @@
 package fr.valquev.mypov.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -19,7 +15,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,10 +25,8 @@ import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
+import fr.valquev.mypov.ImagePicker;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
@@ -213,13 +206,9 @@ public class ObservationDetails extends AppCompatActivity {
         switch(id) {
             case 0:
                 if (item.getTitle().equals("Ajouter une photo")) {
-                    Intent intent = new Intent();
-                    // Show only images, no videos or anything else
-                    intent.setType("image/*");
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    // Always show the chooser (if there are multiple options available)
-                    startActivityForResult(Intent.createChooser(intent, "Sélectionnez une image"), PICK_IMAGE);
-                } else {
+                    Intent chooseImageIntent = ImagePicker.getPickImageIntent(mContext);
+                    startActivityForResult(chooseImageIntent, PICK_IMAGE);
+                } else if (item.getTitle().equals("Itinéraire")) {
                     try {
                         Uri gmmIntentUri = Uri.parse("google.navigation:q="+ mObservation.getLat() +","+ mObservation.getLng());
                         Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
@@ -258,7 +247,8 @@ public class ObservationDetails extends AppCompatActivity {
         if(resultCode == Activity.RESULT_OK) {
             switch(requestCode) {
                 case PICK_IMAGE:
-                    addImage(intent);
+                    Bitmap bitmap = ImagePicker.getImageFromResult(this, resultCode, intent);
+                    uploadImage(bitmap);
                     break;
 
                 default:
@@ -267,25 +257,18 @@ public class ObservationDetails extends AppCompatActivity {
         }
     }
 
-    private void addImage(Intent intent) {
+    private void uploadImage(Bitmap bitmap) {
         try {
-            final Uri selectedImage = intent.getData();
-            final Bitmap userPic = decodeUri(selectedImage);
+            final ProgressDialog dialog = ProgressDialog.show(mContext, "Envoi en cours", "Chargement, veuillez patienter...", true);
+            Bitmap userPic = ImagePicker.getResizedBitmap(bitmap, 512);
 
             double size = (userPic.getByteCount() / 8) / 1000000;
 
-            if(size < 3.0D) {
+            if(size < 10D) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                userPic.compress(Bitmap.CompressFormat.PNG, 100, out);
-                byte[] myByteArray = out.toByteArray();
+                userPic.compress(Bitmap.CompressFormat.JPEG, 100, out);
 
-                final File pic = new File(getApplicationContext().getFileStreamPath("test.jpg").getPath());
-                pic.createNewFile();
-                out.writeTo(new FileOutputStream(pic));
-
-                Log.v("TEST", "TEST " + pic.getPath());
-
-                RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), pic);
+                RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), out.toByteArray());
 
                 MyPOVClient.client.addPhotoObservation(requestBody, mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
@@ -298,90 +281,25 @@ public class ObservationDetails extends AppCompatActivity {
                                 mUser.logout();
                                 finish();
                             }
-                            pic.delete();
                         } else {
                             Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
                         }
+                        dialog.cancel();
                     }
 
                     @Override
                     public void onFailure(Throwable t) {
                         Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                        dialog.cancel();
                     }
                 });
             } else {
-                Toast.makeText(mContext, "L'image doit faire moins de 3mo", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "L'image doit faire moins de 10mo", Toast.LENGTH_LONG).show();
+                dialog.cancel();
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private Bitmap decodeUri(Uri selectedImage) throws FileNotFoundException {
-        BitmapFactory.Options o = new BitmapFactory.Options();
-        o.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(mContext.getContentResolver().openInputStream(selectedImage), null, o);
-
-        // The new size we want to scale to
-        final int REQUIRED_SIZE = 512;
-
-        // Find the correct scale value. It should be the power of 2.
-        int width_tmp = o.outWidth, height_tmp = o.outHeight;
-        int scale = 1;
-        while (true) {
-            if (width_tmp / 2 < REQUIRED_SIZE || height_tmp / 2 < REQUIRED_SIZE) {
-                break;
-            }
-            width_tmp /= 2;
-            height_tmp /= 2;
-            scale *= 2;
-        }
-
-        // Decode with inSampleSize
-        BitmapFactory.Options o2 = new BitmapFactory.Options();
-        o2.inSampleSize = scale;
-        return BitmapFactory.decodeStream(mContext.getContentResolver().openInputStream(selectedImage), null, o2);
-
-    }
-
-    public String getRealPathFromURI(Uri contentUri) {
-        Cursor cursor = null;
-        try {
-            String[] proj = { MediaStore.Images.Media.DATA };
-            cursor = mContext.getContentResolver().query(contentUri, proj, null, null, null);
-            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-            return cursor.getString(column_index);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
-
-    public String getFileNameByUri(Uri uri)
-    {
-        String fileName="unknown";//default fileName
-        Uri filePathUri = uri;
-        if (uri.getScheme().toString().compareTo("content")==0)
-        {
-            Cursor cursor = mContext.getContentResolver().query(uri, null, null, null, null);
-            if (cursor.moveToFirst())
-            {
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);//Instead of "MediaStore.Images.Media.DATA" can be used "_data"
-                filePathUri = Uri.parse(cursor.getString(column_index));
-                fileName = filePathUri.getLastPathSegment().toString();
-            }
-        }
-        else if (uri.getScheme().compareTo("file")==0)
-        {
-            fileName = filePathUri.getLastPathSegment().toString();
-        }
-        else
-        {
-            fileName = fileName+"_"+filePathUri.getLastPathSegment();
-        }
-        return fileName;
     }
 }

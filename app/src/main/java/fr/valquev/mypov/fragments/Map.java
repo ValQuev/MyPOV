@@ -46,6 +46,9 @@ import retrofit.Retrofit;
 
 public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
 
+    public static final int ASK_COARSE_LOCATION_PERMISSION = 1;
+    public static final int ASK_FINE_LOCATION_PERMISSION = 2;
+
     private Context mContext;
     private GoogleMap mapInstance;
     private CoordinatorLayout mLayout;
@@ -79,15 +82,22 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mapInstance = googleMap;
-        //int permissionCheck = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
-        /*if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            getObservations();
+
+        checkPermAndLaunchMap();
+    }
+
+    private void checkPermAndLaunchMap() {
+        int permissionCoarseLocation = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
+        int permissionFineLocation = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCoarseLocation == PackageManager.PERMISSION_GRANTED) {
+            if (permissionFineLocation == PackageManager.PERMISSION_GRANTED) {
+                getObservations();
+            } else {
+                askPermsFineLocation();
+            }
         } else {
-            askPerms();
-        }*/
-
-        getObservations();
-
+            askPermsCoarseLocation();
+        }
     }
 
     private void getObservations() {
@@ -152,11 +162,9 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
         startActivity(intent);
     }
 
-    public void askPerms() {
+    public void askPermsCoarseLocation() {
         // Here, thisActivity is the current activity
-        if (ContextCompat.checkSelfPermission(getActivity(),
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)) {
@@ -169,7 +177,31 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
 
                 // No explanation needed, we can request the permission.
 
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ASK_COARSE_LOCATION_PERMISSION);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+    }
+
+    public void askPermsFineLocation() {
+        // Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ASK_FINE_LOCATION_PERMISSION);
 
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
                 // app-defined int constant. The callback method gets the
@@ -179,27 +211,31 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case 1: {
+            case ASK_COARSE_LOCATION_PERMISSION: {
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    checkPermAndLaunchMap();
                 } else {
-
+                    checkPermAndLaunchMap();
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                 }
                 return;
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request
+            case ASK_FINE_LOCATION_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    checkPermAndLaunchMap();
+                } else {
+                    checkPermAndLaunchMap();
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
         }
     }
 }
