@@ -15,6 +15,7 @@ public class Observation implements Parcelable {
     private long publidate;
     private double lat;
     private double lng;
+    private double distance;
     private String nom;
     private String description;
     private Observateur observateur;
@@ -25,6 +26,7 @@ public class Observation implements Parcelable {
         publidate = parcel.readLong();
         lat = parcel.readDouble();
         lng = parcel.readDouble();
+        distance = parcel.readDouble();
         nom = parcel.readString();
         description = parcel.readString();
         observateur = parcel.readParcelable(Observateur.class.getClassLoader());
@@ -46,6 +48,14 @@ public class Observation implements Parcelable {
 
     public double getLng() {
         return lng;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public String getSuperbDistance() {
+        return String.format("%.1f", distance) + " km";
     }
 
     public String getNom() {
@@ -75,6 +85,7 @@ public class Observation implements Parcelable {
         parcel.writeLong(publidate);
         parcel.writeDouble(lat);
         parcel.writeDouble(lng);
+        parcel.writeDouble(distance);
         parcel.writeString(nom);
         parcel.writeString(description);
         parcel.writeParcelable(observateur, PARCELABLE_WRITE_RETURN_VALUE);

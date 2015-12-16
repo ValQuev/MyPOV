@@ -43,7 +43,7 @@ public class ListeObservationsAdapter extends RecyclerView.Adapter<ListeObservat
 
         listeObservationsViewHolder.nom.setText(observation.getNom());
         listeObservationsViewHolder.observateur.setText(observation.getObservateur().getPseudo());
-        listeObservationsViewHolder.date.setText(new SimpleDateFormat("'le 'dd/MM/yy 'à' HH'h'mm").format(new Date(observation.getPublidate() * 1000)));
+        listeObservationsViewHolder.date.setText(new SimpleDateFormat("dd/MM/yy").format(new Date(observation.getPublidate() * 1000)) + " - " + observation.getSuperbDistance());
 
         listeObservationsViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

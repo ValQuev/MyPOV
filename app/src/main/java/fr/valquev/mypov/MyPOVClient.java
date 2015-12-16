@@ -33,6 +33,10 @@ public interface MyPOVClient {
     Call<MyPOVResponse<List<Observation>>> getObservations(@Field("lat") double lat, @Field("lng") double lng, @Field("distance") int distance, @Field("mail") String mail, @Field("pwd") String password);
 
     @FormUrlEncoded
+    @POST("getListeObservations.php")
+    Call<MyPOVResponse<List<Observation>>> getListeObservations(@Field("lat") double lat, @Field("lng") double lng, @Field("page") int page, @Field("tri") String tri, @Field("mail") String mail, @Field("pwd") String password);
+
+    @FormUrlEncoded
     @POST("getCommentaires.php")
     Call<MyPOVResponse<List<Comment>>> getComments(@Field("id_obs") int id_obs, @Field("mail") String mail, @Field("pwd") String password);
 
@@ -47,8 +51,4 @@ public interface MyPOVClient {
     @Multipart
     @POST("addPhotoObservation.php")
     Call<MyPOVResponse<String>> addPhotoObservation(@Part("img\"; filename=\"image.jpeg\" ") RequestBody file, @Part("id_obs") int id_obs, @Part("mail") String mail, @Part("pwd") String password);
-
-    /*@FormUrlEncoded
-    @POST("selkfjmsefjs.php")
-    Call<MyPOVResponse<MyPOVNote>> setNote(@Field("id_obs") int id_obs);*/
 }

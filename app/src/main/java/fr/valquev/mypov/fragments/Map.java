@@ -4,26 +4,37 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.VisibleRegion;
 
+import java.util.HashMap;
 import java.util.List;
 
 import fr.valquev.mypov.MyPOV;
@@ -31,6 +42,7 @@ import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
 import fr.valquev.mypov.ObservationPhoto;
+import fr.valquev.mypov.PositionMapCenter;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.User;
 import fr.valquev.mypov.activities.AddObservation;
@@ -40,11 +52,12 @@ import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
 
+
 /**
  * Created by ValQuev on 22/09/15.
  */
 
-public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
+public class Map extends BaseFragment implements OnMapReadyCallback {
 
     public static final int ASK_COARSE_LOCATION_PERMISSION = 1;
     public static final int ASK_FINE_LOCATION_PERMISSION = 2;
@@ -55,12 +68,17 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
     private User mUser;
 
     private List<Observation> mObservationList;
+    private HashMap<Marker, Observation> markerObservationHashMap;
+
+    private PositionMapCenter positionMapCenter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mContext = getActivity();
 
         mUser = new User(mContext);
+
+        markerObservationHashMap = new HashMap<>();
 
         return inflater.inflate(R.layout.map, container, false);
     }
@@ -83,6 +101,33 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
     public void onMapReady(GoogleMap googleMap) {
         mapInstance = googleMap;
 
+        if (positionMapCenter != null) {
+            positionMapCenter.update(mapInstance.getCameraPosition().target);
+        }
+
+        mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                VisibleRegion vr = mapInstance.getProjection().getVisibleRegion();
+                double bottom = vr.latLngBounds.southwest.latitude;
+                double left = vr.latLngBounds.southwest.longitude;
+
+                Location center = new Location("center");
+                center.setLatitude(cameraPosition.target.latitude);
+                center.setLongitude(cameraPosition.target.longitude);
+
+                Location middleLeftCornerLocation = new Location("center");
+                middleLeftCornerLocation.setLatitude(bottom);
+                middleLeftCornerLocation.setLongitude(left);
+
+                int dis = (int) Math.ceil(center.distanceTo(middleLeftCornerLocation) / 1000);
+                getObservations(dis);
+                if (positionMapCenter != null) {
+                    positionMapCenter.update(cameraPosition.target);
+                }
+            }
+        });
+
         checkPermAndLaunchMap();
     }
 
@@ -90,9 +135,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
         int permissionCoarseLocation = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION);
         int permissionFineLocation = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCoarseLocation == PackageManager.PERMISSION_GRANTED) {
-            if (permissionFineLocation == PackageManager.PERMISSION_GRANTED) {
-                getObservations();
-            } else {
+            if (permissionFineLocation != PackageManager.PERMISSION_GRANTED) {
                 askPermsFineLocation();
             }
         } else {
@@ -100,16 +143,16 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
         }
     }
 
-    private void getObservations() {
+    private void getObservations(final int distance) {
         mapInstance.setMyLocationEnabled(true);
         mapInstance.getUiSettings().setMapToolbarEnabled(false);
-        mapInstance.setOnInfoWindowClickListener(this);
 
-        MyPOVClient.client.getObservations(48.078515, -0.766991, 1000, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
+        MyPOVClient.client.getObservations(mapInstance.getCameraPosition().target.latitude, mapInstance.getCameraPosition().target.longitude, distance, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
             @Override
             public void onResponse(Response<MyPOVResponse<List<Observation>>> response, Retrofit retrofit) {
                 if (response.isSuccess()) {
                     if (response.body().getStatus() == 0) {
+                        mapInstance.clear();
                         mObservationList = response.body().getObject();
                         if (mObservationList != null) {
                             for (Observation observation : mObservationList) {
@@ -119,12 +162,27 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
                                 } else {
                                     color = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE);
                                 }
-                                mapInstance.addMarker(new MarkerOptions().position(new LatLng(observation.getLat(), observation.getLng())).title(observation.getNom()).icon(color));
+                                Marker marker = mapInstance.addMarker(new MarkerOptions().position(new LatLng(observation.getLat(), observation.getLng())).icon(color));
+                                markerObservationHashMap.put(marker, observation);
                             }
+                            mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                                @Override
+                                public boolean onMarkerClick(Marker marker) {
+                                    Observation observationClicked = markerObservationHashMap.get(marker);
+
+                                    Intent intent = new Intent(mContext, ObservationDetails.class);
+                                    intent.putExtra("observation", observationClicked);
+                                    startActivity(intent);
+
+                                    return false;
+                                }
+                            });
                         } else {
-                            Snackbar.make(mLayout, "Aucune observation à proximité", Snackbar.LENGTH_LONG)
-                                    .setAction("Ok", null)
-                                    .show();
+                            Snackbar snackbar = Snackbar.make(mLayout, "Aucune observation dans ce secteur", Snackbar.LENGTH_SHORT);
+                            View view = snackbar.getView();
+                            TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+                            tv.setTextColor(Color.WHITE);
+                            snackbar.show();
                         }
                     } else {
                         Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
@@ -149,17 +207,6 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
             mapInstance.setMapType(GoogleMap.MAP_TYPE_NORMAL);
             ((NavigationView) getActivity().findViewById(R.id.mypov_navigation)).getMenu().getItem(3).setTitle(getString(R.string.action_satellite_view)).setIcon(getResources().getDrawable(R.drawable.ic_satellite_black_24dp));
         }
-    }
-
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-        int position = Integer.parseInt(marker.getId().replace("m", ""));
-
-        Observation observationClicked = mObservationList.get(position);
-
-        Intent intent = new Intent(mContext, ObservationDetails.class);
-        intent.putExtra("observation", observationClicked);
-        startActivity(intent);
     }
 
     public void askPermsCoarseLocation() {
@@ -237,5 +284,13 @@ public class Map extends BaseFragment implements OnMapReadyCallback, GoogleMap.O
                 return;
             }
         }
+    }
+
+    public void setCameraPosition(CameraUpdate cameraUpdate) {
+        mapInstance.animateCamera(cameraUpdate);
+    }
+
+    public void setPositionMapCenter(PositionMapCenter positionMapCenter) {
+        this.positionMapCenter = positionMapCenter;
     }
 }

@@ -240,10 +240,9 @@ public class ObservationDetails extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //if (mObservation.getObservateur().getId_user() == mUser.getId_user()) {
+        if (mObservation.getObservateur().getId_user() == mUser.getId_user()) {
             menu.add("Ajouter une photo");
-            menu.add("Itinéraire");
-        //}
+        }
         menu.add("Itinéraire");
         return true;
     }
@@ -266,48 +265,44 @@ public class ObservationDetails extends AppCompatActivity {
     }
 
     private void uploadImage(Bitmap bitmap) {
-        try {
+        final Bitmap userPic = ImagePicker.getResizedBitmap(bitmap, 512);
+
+        double size = (userPic.getByteCount() / 8) / 1000000;
+
+        if(size < 10D) {
             final ProgressDialog dialog = ProgressDialog.show(mContext, "Envoi en cours", "Chargement, veuillez patienter...", true);
-            Bitmap userPic = ImagePicker.getResizedBitmap(bitmap, 512);
 
-            double size = (userPic.getByteCount() / 8) / 1000000;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            userPic.compress(Bitmap.CompressFormat.JPEG, 100, out);
 
-            if(size < 10D) {
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                userPic.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), out.toByteArray());
 
-                RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), out.toByteArray());
-
-                MyPOVClient.client.addPhotoObservation(requestBody, mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
-                    @Override
-                    public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
-                        if (response.isSuccess()) {
-                            if (response.body().getStatus() == 0) {
-                                Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
-                            } else {
-                                Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
-                                mUser.logout();
-                                finish();
-                            }
+            MyPOVClient.client.addPhotoObservation(requestBody, mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                @Override
+                public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
+                    if (response.isSuccess()) {
+                        if (response.body().getStatus() == 0) {
+                            descriptionFrag.addImageToFlipper(userPic);
+                            descriptionFrag.setFlipperToLastPic();
                         } else {
-                            Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                            mUser.logout();
+                            finish();
                         }
-                        dialog.cancel();
+                    } else {
+                        Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
                     }
+                    dialog.cancel();
+                }
 
-                    @Override
-                    public void onFailure(Throwable t) {
-                        Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
-                        dialog.cancel();
-                    }
-                });
-            } else {
-                Toast.makeText(mContext, "L'image doit faire moins de 10mo", Toast.LENGTH_LONG).show();
-                dialog.cancel();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+                @Override
+                public void onFailure(Throwable t) {
+                    Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                    dialog.cancel();
+                }
+            });
+        } else {
+            Toast.makeText(mContext, "L'image doit faire moins de 10mo", Toast.LENGTH_LONG).show();
         }
     }
 }

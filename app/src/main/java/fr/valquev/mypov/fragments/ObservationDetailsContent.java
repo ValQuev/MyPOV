@@ -1,6 +1,10 @@
 package fr.valquev.mypov.fragments;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,6 +27,7 @@ public class ObservationDetailsContent extends BaseFragment {
 
     private Context mContext;
     private Observation mObservation;
+    private ViewFlipper viewFlipper;
 
     private int page = 0;
 
@@ -38,7 +43,7 @@ public class ObservationDetailsContent extends BaseFragment {
         TextView texte = (TextView) view.findViewById(R.id.observation_content_text);
         texte.setText(mObservation.getDescription());
 
-        final ViewFlipper viewFlipper = (ViewFlipper) view.findViewById(R.id.annonce_vf);
+        viewFlipper = (ViewFlipper) view.findViewById(R.id.annonce_vf);
         view.findViewById(R.id.show_annonce_left).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,5 +77,17 @@ public class ObservationDetailsContent extends BaseFragment {
             Picasso.with(mContext).load("https://mypov.fr/uploads/observations/" + mObservation.getId() + "/" + photo.getId() + "." + photo.getFormat()).centerCrop().fit().into(imageView);
             viewFlipper.addView(imageView);
         }
+    }
+
+    public void addImageToFlipper(Bitmap bitmap) {
+        ImageView imageView = new ImageView(mContext);
+        imageView.setImageBitmap(bitmap);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        viewFlipper.addView(imageView);
+    }
+
+    public void setFlipperToLastPic() {
+        page = viewFlipper.getChildCount() - 1;
+        viewFlipper.setDisplayedChild(page);
     }
 }
