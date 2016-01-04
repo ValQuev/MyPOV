@@ -21,34 +21,41 @@ import retrofit.http.Query;
 public interface MyPOVClient {
 
     String BASE_URL = "https://mypov.fr/api/";
+    String CONNEXION = "connexion.php";
+    String GET_OBSERVATIONS = "getObservations.php";
+    String GET_LISTE_OBSERVATIONS = "getListeObservations.php";
+    String GET_COMMENTAIRES = "getCommentaires.php";
+    String ADD_COMMENTAIRE = "addCommentaire.php";
+    String ADD_OBSERVATION = "addObservation.php";
+    String ADD_PHOTO_OBSERVATION = "addPhotoObservation.php";
 
     MyPOVClient client = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build().create(MyPOVClient.class);
 
     @FormUrlEncoded
-    @POST("connexion.php")
+    @POST(CONNEXION)
     Call<MyPOVResponse<User>> login(@Field("mail") String mail, @Field("pwd") String password);
 
     @FormUrlEncoded
-    @POST("getObservations.php")
+    @POST(GET_OBSERVATIONS)
     Call<MyPOVResponse<List<Observation>>> getObservations(@Field("lat") double lat, @Field("lng") double lng, @Field("distance") int distance, @Field("mail") String mail, @Field("pwd") String password);
 
     @FormUrlEncoded
-    @POST("getListeObservations.php")
+    @POST(GET_LISTE_OBSERVATIONS)
     Call<MyPOVResponse<List<Observation>>> getListeObservations(@Field("lat") double lat, @Field("lng") double lng, @Field("page") int page, @Field("tri") String tri, @Field("mail") String mail, @Field("pwd") String password);
 
     @FormUrlEncoded
-    @POST("getCommentaires.php")
+    @POST(GET_COMMENTAIRES)
     Call<MyPOVResponse<List<Comment>>> getComments(@Field("id_obs") int id_obs, @Field("mail") String mail, @Field("pwd") String password);
 
     @FormUrlEncoded
-    @POST("addCommentaire.php")
+    @POST(ADD_COMMENTAIRE)
     Call<MyPOVResponse<String>> addComment(@Field("id_obs") int id_obs, @Field("texte") String texte, @Field("mail") String mail, @Field("pwd") String password);
 
     @FormUrlEncoded
-    @POST("addObservation.php")
-    Call<MyPOVResponse<String>> addObservation(@Field("nom") String nom, @Field("description") String description, @Field("lat") double lat, @Field("lng") double lng, @Field("mail") String mail, @Field("pwd") String password);
+    @POST(ADD_OBSERVATION)
+    Call<MyPOVResponse<String>> addObservation(@Field("nom") String nom, @Field("description") String description, @Field("date") long date, @Field("lat") double lat, @Field("lng") double lng, @Field("mail") String mail, @Field("pwd") String password);
 
     @Multipart
-    @POST("addPhotoObservation.php")
+    @POST(ADD_PHOTO_OBSERVATION)
     Call<MyPOVResponse<String>> addPhotoObservation(@Part("img\"; filename=\"image.jpeg\" ") RequestBody file, @Part("id_obs") int id_obs, @Part("mail") String mail, @Part("pwd") String password);
 }

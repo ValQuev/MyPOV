@@ -80,7 +80,7 @@ public class AddObservation extends AppCompatActivity implements OnMapReadyCallb
                     return;
                 }
 
-                MyPOVClient.client.addObservation(nom, description, observation.latitude, observation.longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                /*MyPOVClient.client.addObservation(nom, description, observation.latitude, observation.longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
                     public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                         if (response.isSuccess()) {
@@ -102,7 +102,7 @@ public class AddObservation extends AppCompatActivity implements OnMapReadyCallb
                     public void onFailure(Throwable t) {
                         Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
                     }
-                });
+                });*/
             }
         });
     }

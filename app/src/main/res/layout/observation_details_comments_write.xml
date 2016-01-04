@@ -9,5 +9,7 @@
         android:inputType="textMultiLine"
         android:hint="Votre commentaire"
         android:id="@+id/observation_details_add_comment_text"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal">
+            <requestFocus />
+        </EditText>
 </LinearLayout>
