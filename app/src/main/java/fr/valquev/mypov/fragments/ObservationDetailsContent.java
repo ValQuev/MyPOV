@@ -44,7 +44,7 @@ public class ObservationDetailsContent extends BaseFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         TextView texte = (TextView) view.findViewById(R.id.observation_content_text);
-        texte.setText(mObservation.getDescription() + " " + new SimpleDateFormat("dd/MM/yy").format(new Date(mObservation.getPublidate())));
+        texte.setText(String.format("%s %s", mObservation.getDescription(), new SimpleDateFormat("dd/MM/yy").format(new Date(mObservation.getPublidate()))));
 
         viewFlipper = (ViewFlipper) view.findViewById(R.id.annonce_vf);
         view.findViewById(R.id.show_annonce_left).setOnClickListener(new View.OnClickListener() {
