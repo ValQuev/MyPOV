@@ -51,31 +51,60 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="right"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="right">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Medium Text"
+            android:id="@+id/observation_content_date"
+            android:layout_marginRight="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="0"
+            android:id="@+id/textView4"
+            android:textColor="#298900" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="31dp"
             android:id="@+id/affirmer"
             android:tint="@android:color/black"
             android:background="@drawable/ic_thumb_up_black_24dp"
-            android:layout_marginRight="20dp" />
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp" />
 
         <Button
             style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="31dp"
+            android:layout_height="32dp"
             android:id="@+id/infirmer"
             android:tint="@android:color/black"
-            android:background="@drawable/ic_thumb_down_black_24dp" />
+            android:background="@drawable/ic_thumb_down_black_24dp"
+            android:layout_marginRight="5dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="0"
+            android:id="@+id/textView5"
+            android:textColor="#a50000" />
     </LinearLayout>
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="270dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:id="@+id/observation_content_text" />
+        android:id="@+id/observation_content_text"
+        android:background="#dedede"
+        android:padding="20dp" />
 </LinearLayout>
