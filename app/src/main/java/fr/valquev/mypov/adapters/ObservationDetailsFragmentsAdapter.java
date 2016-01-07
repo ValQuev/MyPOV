@@ -3,6 +3,7 @@ package fr.valquev.mypov.adapters;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +35,13 @@ public class ObservationDetailsFragmentsAdapter extends FragmentPagerAdapter {
         mFragmentTitleList.add(title);
     }
 
+    public void setCommentTitle(String title) {
+        mFragmentTitleList.set(1, title);
+    }
+
     @Override
     public CharSequence getPageTitle(int position) {
+        Log.v("TEST", "TITLE = " + mFragmentTitleList.get(position));
         return mFragmentTitleList.get(position);
     }
 }

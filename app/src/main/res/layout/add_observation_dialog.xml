@@ -19,8 +19,9 @@
         android:id="@+id/observation_add_description_text"
         android:layout_gravity="center_horizontal" />
 
-    <DatePicker
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/observation_add_date"/>
 
 </LinearLayout>

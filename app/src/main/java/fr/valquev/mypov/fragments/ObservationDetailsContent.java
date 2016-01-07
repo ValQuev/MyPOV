@@ -2,12 +2,9 @@ package fr.valquev.mypov.fragments;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -16,12 +13,11 @@ import android.widget.ViewFlipper;
 
 import com.squareup.picasso.Picasso;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
+import fr.valquev.mypov.Notes;
 import fr.valquev.mypov.Observation;
 import fr.valquev.mypov.ObservationPhoto;
 import fr.valquev.mypov.R;
+import fr.valquev.mypov.SwipeGestureListener;
 
 /**
  * Created by ValQuev on 28/09/15.
@@ -30,7 +26,8 @@ public class ObservationDetailsContent extends BaseFragment {
 
     private Context mContext;
     private Observation mObservation;
-    private ViewFlipper viewFlipper;
+    private ViewFlipper mViewFlipper;
+    private SwipeGestureListener swipeGestureListener;
 
     private int page = 0;
 
@@ -43,42 +40,74 @@ public class ObservationDetailsContent extends BaseFragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        TextView affirmation = (TextView) view.findViewById(R.id.tv_affirmation);
+        TextView infirmation = (TextView) view.findViewById(R.id.tv_infirmation);
         TextView texte = (TextView) view.findViewById(R.id.observation_content_text);
-        texte.setText(String.format("%s %s", mObservation.getDescription(), new SimpleDateFormat("dd/MM/yy").format(new Date(mObservation.getPublidate()))));
 
-        viewFlipper = (ViewFlipper) view.findViewById(R.id.annonce_vf);
-        view.findViewById(R.id.show_annonce_left).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (page > 0) {
-                    page--;
-                } else {
-                    page = viewFlipper.getChildCount() - 1;
-                }
-                viewFlipper.setDisplayedChild(page);
-            }
-        });
-        view.findViewById(R.id.show_annonce_right).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (page < viewFlipper.getChildCount() - 1) {
-                    page++;
-                } else {
-                    page = 0;
-                }
-                viewFlipper.setDisplayedChild(page);
-            }
-        });
+        Notes notes = mObservation.getNotes();
+        affirmation.setText(String.format("%d", notes.getNbAffirmations()));
+        infirmation.setText(String.format("%d", notes.getNbInfirmations()));
+
+        texte.setText(String.format("%s %s", mObservation.getDescription(), mObservation.getSuperbDate()));
+
+        mViewFlipper = (ViewFlipper) view.findViewById(R.id.annonce_vf);
 
         ImageView map = new ImageView(mContext);
         String pos = mObservation.getLat() + "," + mObservation.getLng();
         Picasso.with(mContext).load("https://maps.googleapis.com/maps/api/staticmap?center=" + pos + "&zoom=13&markers=" + pos + "&size=640x480&scale=2").centerCrop().fit().into(map);
-        viewFlipper.addView(map);
+        mViewFlipper.addView(map);
 
         for (ObservationPhoto photo : mObservation.getPhotos()) {
             ImageView imageView = new ImageView(mContext);
             Picasso.with(mContext).load("https://mypov.fr/uploads/observations/" + mObservation.getId() + "/" + photo.getId() + "." + photo.getFormat()).centerCrop().fit().into(imageView);
-            viewFlipper.addView(imageView);
+            mViewFlipper.addView(imageView);
+        }
+
+        swipeGestureListener = new SwipeGestureListener(mContext);
+
+        mViewFlipper.setOnTouchListener(swipeGestureListener);
+
+        if (mViewFlipper.getChildCount() > 1) {
+            view.findViewById(R.id.show_annonce_left).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.show_annonce_right).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.show_annonce_left).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    previous();
+                }
+            });
+            view.findViewById(R.id.show_annonce_right).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    next();
+                }
+            });
+        }
+    }
+
+    public void previous() {
+        if (mViewFlipper.getChildCount() > 1) {
+            if (page > 0) {
+                page--;
+            } else {
+                page = mViewFlipper.getChildCount() - 1;
+            }
+            mViewFlipper.setInAnimation(mContext, R.anim.right_in);
+            mViewFlipper.setOutAnimation(mContext, R.anim.right_out);
+            mViewFlipper.setDisplayedChild(page);
+        }
+    }
+
+    public void next() {
+        if (mViewFlipper.getChildCount() > 1) {
+            if (page < mViewFlipper.getChildCount() - 1) {
+                page++;
+            } else {
+                page = 0;
+            }
+            mViewFlipper.setInAnimation(mContext, R.anim.left_in);
+            mViewFlipper.setOutAnimation(mContext, R.anim.left_out);
+            mViewFlipper.setDisplayedChild(page);
         }
     }
 
@@ -86,11 +115,15 @@ public class ObservationDetailsContent extends BaseFragment {
         ImageView imageView = new ImageView(mContext);
         imageView.setImageBitmap(bitmap);
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        viewFlipper.addView(imageView);
+        mViewFlipper.addView(imageView);
     }
 
     public void setFlipperToLastPic() {
-        page = viewFlipper.getChildCount() - 1;
-        viewFlipper.setDisplayedChild(page);
+        page = mViewFlipper.getChildCount() - 1;
+        mViewFlipper.setDisplayedChild(page);
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        return swipeGestureListener.getDetector().onTouchEvent(event);
     }
 }

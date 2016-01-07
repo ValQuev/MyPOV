@@ -67,12 +67,12 @@ public class ObservationDetailsComments extends BaseFragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getComments();
+                getComments(true);
             }
         });
     }
 
-    public void getComments() {
+    public void getComments(final boolean firstLoad) {
         mSwipeRefreshLayout.setRefreshing(true);
         MyPOVClient.client.getComments(mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Comment>>>() {
             @Override
@@ -82,6 +82,9 @@ public class ObservationDetailsComments extends BaseFragment {
                         List<Comment> commentList = response.body().getObject();
                         if(commentList != null) {
                             mCommentList.setAdapter(new ObservationDetailsCommentsAdapter(commentList));
+                            if (!firstLoad) {
+                                ((ObservationDetails) mContext).setNbCommentsTitle(commentList.size());
+                            }
                             mSwipeRefreshLayout.setRefreshing(false);
                         } else {
                             //TODO PAS DE COMMENTAIRES
@@ -114,7 +117,7 @@ public class ObservationDetailsComments extends BaseFragment {
         mSwipeRefreshLayout.post(new Runnable() {
             @Override
             public void run() {
-                getComments();
+                getComments(false);
             }
         });
     }

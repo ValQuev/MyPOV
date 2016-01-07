@@ -1,15 +1,21 @@
 package fr.valquev.mypov.fragments;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -43,6 +49,8 @@ public class ListeObservations extends BaseFragment {
 
     private LatLng position;
 
+    private int page = 1;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mContext = getActivity();
@@ -71,14 +79,18 @@ public class ListeObservations extends BaseFragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                getListeObservation();
+                getListeObservation(page);
             }
         });
     }
 
-    private void getListeObservation() {
+    private void getListeObservation(int page) {
         mSwipeRefreshLayout.setRefreshing(true);
-        MyPOVClient.client.getListeObservations(position.latitude, position.longitude, 1, "distance", mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
+        int iduser = -1;
+        if (mUser.getPreferedFilter()) {
+            iduser = mUser.getId_user();
+        }
+        MyPOVClient.client.getListeObservations(position.latitude, position.longitude, page, iduser, mUser.getPreferedTri(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
             @Override
             public void onResponse(Response<MyPOVResponse<List<Observation>>> response, Retrofit retrofit) {
                 if (response.isSuccess()) {
@@ -113,15 +125,54 @@ public class ListeObservations extends BaseFragment {
     public void onResume() {
         super.onResume();
 
+        refreshList();
+    }
+
+    private void refreshList() {
         mSwipeRefreshLayout.post(new Runnable() {
             @Override
             public void run() {
-                getListeObservation();
+                getListeObservation(page);
             }
         });
     }
 
     public void update(LatLng position) {
         this.position = position;
+    }
+
+    public void openFilterDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
+        final View v = getActivity().getLayoutInflater().inflate(R.layout.filter_dialog, null);
+        final RadioGroup rg = (RadioGroup) v.findViewById(R.id.filter_rb);
+        final RadioButton rbDistance = (RadioButton) v.findViewById(R.id.filter_rb_distance);
+        final RadioButton rbDate = (RadioButton) v.findViewById(R.id.filter_rb_date);
+        final CheckBox cb = (CheckBox) v.findViewById(R.id.filter_cb_mine);
+        cb.setChecked(mUser.getPreferedFilter());
+        if (mUser.getPreferedTri().equalsIgnoreCase("date")) {
+            rbDate.setChecked(true);
+            rbDistance.setChecked(false);
+        } else {
+            rbDate.setChecked(false);
+            rbDistance.setChecked(true);
+        }
+        builder.setView(v);
+        builder.setTitle("Trier par");
+        builder.setPositiveButton("Valider", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mUser.setPreferedFilter(cb.isChecked());
+
+                if (rg.getCheckedRadioButtonId() == rbDate.getId()) {
+                    mUser.setPreferedTri("date");
+                } else {
+                    mUser.setPreferedTri("distance");
+                }
+
+                refreshList();
+            }
+        });
+        builder.setNegativeButton("Annuler", null);
+        builder.show();
     }
 }

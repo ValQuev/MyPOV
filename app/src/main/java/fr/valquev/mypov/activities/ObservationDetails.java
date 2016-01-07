@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -29,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import fr.valquev.mypov.ImagePicker;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
+import fr.valquev.mypov.NoSwipeViewPager;
 import fr.valquev.mypov.Observation;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.User;
@@ -47,13 +49,14 @@ public class ObservationDetails extends AppCompatActivity {
     private static final int PICK_IMAGE = 100;
 
     private Context mContext;
-    private ViewPager mViewPager;
+    private NoSwipeViewPager mViewPager;
     private TabLayout mTabLayout;
     private FloatingActionButton addCommentFAB;
 
     private Observation mObservation;
     private User mUser;
 
+    private ObservationDetailsFragmentsAdapter adapter;
     private ObservationDetailsComments commentFrag;
     private ObservationDetailsContent descriptionFrag;
 
@@ -78,7 +81,7 @@ public class ObservationDetails extends AppCompatActivity {
         descriptionFrag = (ObservationDetailsContent) ObservationDetailsContent.instantiate(mContext, ObservationDetailsContent.class.getName(), observation);
         commentFrag = (ObservationDetailsComments) ObservationDetailsComments.instantiate(mContext, ObservationDetailsComments.class.getName(), observation);
 
-        mViewPager = (ViewPager) findViewById(R.id.observation_details_viewpager);
+        mViewPager = (NoSwipeViewPager) findViewById(R.id.observation_details_viewpager);
         Toolbar toolbar = (Toolbar) findViewById(R.id.observation_details_toolbar);
         mTabLayout = (TabLayout) findViewById(R.id.observation_details_tabs);
         addCommentFAB = (FloatingActionButton) findViewById(R.id.fab_observation_details_add_comment);
@@ -93,7 +96,7 @@ public class ObservationDetails extends AppCompatActivity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
                 final View v = getLayoutInflater().inflate(R.layout.observation_details_comments_write, null);
                 builder.setView(v);
-                builder.setMessage(mObservation.getNom());
+                builder.setTitle(mObservation.getNom());
                 builder.setPositiveButton("Commenter", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -111,7 +114,7 @@ public class ObservationDetails extends AppCompatActivity {
                             public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                                 if (response.isSuccess()) {
                                     if (response.body().getStatus() == 0) {
-                                        commentFrag.getComments();
+                                        commentFrag.getComments(false);
                                     } else {
                                         Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
                                         mUser.logout();
@@ -140,9 +143,9 @@ public class ObservationDetails extends AppCompatActivity {
     }
 
     private void setupViewPager() {
-        ObservationDetailsFragmentsAdapter adapter = new ObservationDetailsFragmentsAdapter(getSupportFragmentManager());
+        adapter = new ObservationDetailsFragmentsAdapter(getSupportFragmentManager());
         adapter.addFrag(descriptionFrag, getResources().getString(R.string.description_up));
-        adapter.addFrag(commentFrag, getResources().getString(R.string.comments_up));
+        adapter.addFrag(commentFrag, getResources().getString(R.string.comments_up) + "(" + mObservation.getNb_commentaires() + ")");
 
         mViewPager.setAdapter(adapter);
         mViewPager.setCurrentItem(0);
@@ -191,6 +194,18 @@ public class ObservationDetails extends AppCompatActivity {
         });
     }
 
+    private void refreshCommentsTitle() {
+        adapter.setCommentTitle(getResources().getString(R.string.comments_up) + "(" + mObservation.getNb_commentaires() + ")");
+        adapter.notifyDataSetChanged();
+        mTabLayout.setTabsFromPagerAdapter(adapter);
+        mViewPager.setCurrentItem(1);
+    }
+
+    public void setNbCommentsTitle(int nbCommentsTitle) {
+        mObservation.setNb_commentaires(nbCommentsTitle);
+        refreshCommentsTitle();
+    }
+
     private void setAB() {
         ActionBar actionBar = getSupportActionBar();
 
@@ -220,6 +235,42 @@ public class ObservationDetails extends AppCompatActivity {
                         startActivity(i);
                         Toast.makeText(mContext, "Veuillez installer Google Maps", Toast.LENGTH_SHORT).show();
                     }
+                } else if(item.getTitle().equals("Supprimer cette observation")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
+                    builder.setTitle(mObservation.getNom());
+                    builder.setMessage("Attention ! Il est impossible de restaurer une observation supprimée. Êtes-vous bien sûr de vouloir supprimer cette observation ?");
+                    builder.setNegativeButton("Non", null);
+                    builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            final ProgressDialog dialogdel = ProgressDialog.show(mContext, "Suppression en cours", "Chargement, veuillez patienter...", true);
+                            MyPOVClient.client.deleteObservation(mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                                @Override
+                                public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
+                                    if (response.isSuccess()) {
+                                        if (response.body().getStatus() == 0) {
+                                            Toast.makeText(mContext, "Observation supprimée", Toast.LENGTH_SHORT).show();
+                                            finish();
+                                        } else {
+                                            Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                                            mUser.logout();
+                                            finish();
+                                        }
+                                    } else {
+                                        Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
+                                    }
+                                    dialogdel.cancel();
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+                                    Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                                    dialogdel.cancel();
+                                }
+                            });
+                        }
+                    });
+                    builder.show();
                 }
                 break;
 
@@ -242,6 +293,7 @@ public class ObservationDetails extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         if (mObservation.getObservateur().getId_user() == mUser.getId_user()) {
             menu.add("Ajouter une photo");
+            menu.add("Supprimer cette observation");
         }
         menu.add("Itinéraire");
         return true;
@@ -304,5 +356,18 @@ public class ObservationDetails extends AppCompatActivity {
         } else {
             Toast.makeText(mContext, "L'image doit faire moins de 10mo", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void next() {
+        descriptionFrag.next();
+    }
+
+    public void previous() {
+        descriptionFrag.previous();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return descriptionFrag.onTouchEvent(event);
     }
 }

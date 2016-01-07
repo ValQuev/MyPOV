@@ -33,6 +33,10 @@
             android:name=".activities.Login"
             android:label="@string/login" />
 
+        <activity
+            android:name=".activities.Register"
+            android:label="@string/register" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyB4r0EOs_Kns9B-2zB8Gi9KCldulfrBGic" />

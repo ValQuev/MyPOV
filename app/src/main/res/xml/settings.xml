@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:key="pref_key_category_1"
+        android:title="Mon compte">
+
+        <Preference
+            android:key="pref_change_passwd"
+            android:title="Mot de passe"
+            android:summary="Modifier mon mot de passe" />
+
+        <Preference
+            android:key="pref_logout"
+            android:title="Déconnexion"
+            android:summary="Se déconnecter de l\'application" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -17,6 +17,7 @@
             android:layout_width="32dp"
             android:layout_height="match_parent"
             android:id="@+id/show_annonce_left"
+            android:visibility="gone"
             android:background="@drawable/left_gradient">
 
             <ImageView
@@ -32,6 +33,7 @@
             android:layout_width="32dp"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
+            android:visibility="gone"
             android:id="@+id/show_annonce_right"
             android:background="@drawable/right_gradient">
 
@@ -69,26 +71,24 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="0"
-            android:id="@+id/textView4"
+            android:id="@+id/tv_affirmation"
             android:textColor="#298900" />
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
+        <ImageView
             android:layout_width="32dp"
-            android:layout_height="31dp"
+            android:layout_height="32dp"
             android:id="@+id/affirmer"
             android:tint="@android:color/black"
-            android:background="@drawable/ic_thumb_up_black_24dp"
+            android:src="@drawable/ic_thumb_up_black_24dp"
             android:layout_marginRight="5dp"
             android:layout_marginLeft="5dp" />
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="31dp"
+        <ImageView
+            android:layout_width="32dp"
             android:layout_height="32dp"
             android:id="@+id/infirmer"
             android:tint="@android:color/black"
-            android:background="@drawable/ic_thumb_down_black_24dp"
+            android:src="@drawable/ic_thumb_down_black_24dp"
             android:layout_marginRight="5dp" />
 
         <TextView
@@ -96,7 +96,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="0"
-            android:id="@+id/textView5"
+            android:id="@+id/tv_infirmation"
             android:textColor="#a50000" />
     </LinearLayout>
 

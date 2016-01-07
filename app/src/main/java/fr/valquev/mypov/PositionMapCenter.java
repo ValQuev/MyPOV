@@ -7,6 +7,6 @@ import com.google.android.gms.maps.model.LatLng;
  */
 public interface PositionMapCenter {
 
-    void update(LatLng position);
+    void update(LatLng position, float zoom);
 
 }

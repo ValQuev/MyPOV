@@ -10,11 +10,14 @@ import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CalendarView;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,7 +33,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
+import com.roomorama.caldroid.CaldroidFragment;
+import com.roomorama.caldroid.CaldroidListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -86,7 +94,9 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
 
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
-        dialoading = ProgressDialog.show(mContext, "Chargement", "En attente d'information sur votre localisation...", true);
+        if (mUser.getLastLatLng().latitude == 0.0 && mUser.getLastLatLng().longitude == 0.0) {
+            dialoading = ProgressDialog.show(mContext, "Chargement", "En attente d'information sur votre localisation...", true);
+        }
 
         ((SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
 
@@ -108,6 +118,10 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mapInstance = googleMap;
 
+        if (mUser.getLastLatLng().latitude != 0.0 && mUser.getLastLatLng().longitude != 0.0) {
+            mapInstance.animateCamera(CameraUpdateFactory.newLatLngZoom(mUser.getLastLatLng(), mUser.getZoom()));
+        }
+
         if (((MyPOV) mContext).switchCompat.isChecked()) {
             mapInstance.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         } else {
@@ -115,7 +129,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
         }
 
         if (positionMapCenter != null) {
-            positionMapCenter.update(mapInstance.getCameraPosition().target);
+            positionMapCenter.update(mapInstance.getCameraPosition().target, mapInstance.getCameraPosition().zoom);
         }
 
         mapInstance.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
@@ -138,7 +152,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                 int dis = (int) Math.ceil(center.distanceTo(middleLeftCornerLocation) / 1000);
                 getObservations(dis);
                 if (positionMapCenter != null) {
-                    positionMapCenter.update(centerScreen);
+                    positionMapCenter.update(centerScreen, cameraPosition.zoom);
                 }
             }
         });
@@ -160,6 +174,8 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                 addMarker = new MarkerOptions().position(addMarkerPos).draggable(true);
             }
         });
+
+        fab.setVisibility(View.VISIBLE);
     }
 
     private void getObservations(final int distance) {
@@ -190,8 +206,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                             mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                                 @Override
                                 public boolean onMarkerClick(Marker marker) {
-                                    Log.v("MARKER CLICKED", "resp : "+marker.isDraggable());
-                                    if (marker.equals(addMarker)) {
+                                    if (marker.isDraggable()) {
                                         dialogAddObservation();
                                     } else {
                                         Observation observationClicked = markerObservationHashMap.get(marker);
@@ -203,12 +218,14 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                                 }
                             });
                         } else {
-                            if (!dialoading.isShowing()) {
-                                Snackbar snackbar = Snackbar.make(mLayout, "Aucune observation dans ce secteur", Snackbar.LENGTH_SHORT);
-                                View view = snackbar.getView();
-                                TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
-                                tv.setTextColor(Color.WHITE);
-                                snackbar.show();
+                            if (dialoading != null) {
+                                if (!dialoading.isShowing()) {
+                                    Snackbar snackbar = Snackbar.make(mLayout, "Aucune observation dans ce secteur", Snackbar.LENGTH_SHORT);
+                                    View view = snackbar.getView();
+                                    TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+                                    tv.setTextColor(Color.WHITE);
+                                    snackbar.show();
+                                }
                             }
                         }
                     } else {
@@ -238,7 +255,40 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
         final View v = getActivity().getLayoutInflater().inflate(R.layout.add_observation_dialog, null);
         builder.setView(v);
-        builder.setMessage("Ajouter une observation");
+        builder.setTitle("Ajouter une observation");
+        CaldroidFragment caldroidFragment = new CaldroidFragment();
+        Bundle args = new Bundle();
+        final Calendar cal = Calendar.getInstance();
+        args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
+        args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
+        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
+        caldroidFragment.setArguments(args);
+
+        caldroidFragment.setCaldroidListener(new CaldroidListener() {
+            @Override
+            public void onSelectDate(Date date, View view) {
+                cal.setTime(date);
+            }
+
+            @Override
+            public void onChangeMonth(int month, int year) {
+
+            }
+
+            @Override
+            public void onLongClickDate(Date date, View view) {
+
+            }
+
+            @Override
+            public void onCaldroidViewCreated() {
+
+            }
+        });
+
+        FragmentTransaction t = ((MyPOV) mContext).getSupportFragmentManager().beginTransaction();
+        t.replace(R.id.observation_add_date, caldroidFragment);
+        t.commit();
         builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
@@ -261,7 +311,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
 
                 dialogadding = ProgressDialog.show(mContext, "Ajout de l'observation", "Chargement, veuillez patienter...", true);
 
-                MyPOVClient.client.addObservation(nom, description, System.currentTimeMillis() / 1000, addMarker.getPosition().latitude, addMarker.getPosition().longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                MyPOVClient.client.addObservation(nom, description, cal.getTimeInMillis() / 1000, addMarker.getPosition().latitude, addMarker.getPosition().longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
                     public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                         if (response.isSuccess()) {
@@ -295,8 +345,10 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
     public void setCameraPosition(LatLng position) {
         if (mapInstance != null) {
             mapInstance.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
-            if (dialoading.isShowing()) {
-                dialoading.cancel();
+            if (dialoading != null) {
+                if (dialoading.isShowing()) {
+                    dialoading.cancel();
+                }
             }
         }
     }

@@ -20,52 +20,67 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 /**
- * Created by ValQuev on 28/09/15.
+ * Created by ValQuev on 06/01/2016.
  */
-public class Login extends AppCompatActivity {
+public class Register extends AppCompatActivity {
 
     private Context mContext;
 
+    private EditText mPseudo;
     private EditText mMail;
-    private EditText mPassword;
+    private EditText mPassword1;
+    private EditText mPassword2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.login);
+        setContentView(R.layout.register);
 
         mContext = this;
 
-        if (new User(mContext).isLogged()) {
-            exit();
-            return;
-        }
+        mPseudo = (EditText) findViewById(R.id.regist_pseudo);
+        mMail = (EditText) findViewById(R.id.regist_mail);
+        mPassword1 = (EditText) findViewById(R.id.regist_pwd1);
+        mPassword2 = (EditText) findViewById(R.id.regist_pwd2);
 
-        mMail = (EditText) findViewById(R.id.login_mail_et);
-        mPassword = (EditText) findViewById(R.id.login_passwd_et);
-
-        findViewById(R.id.login_go_btn).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btn_signup).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
+                if(mPseudo.getText().toString().equals("")) {
+                    mPseudo.setError("Vide");
+                    return;
+                }
+
                 if(mMail.getText().toString().equals("")) {
                     mMail.setError("Vide");
                     return;
                 }
 
-                if(mPassword.getText().toString().equals("")) {
-                    mPassword.setError("Vide");
+                if(mPassword1.getText().toString().equals("")) {
+                    mPassword1.setError("Vide");
                     return;
                 }
 
-                final ProgressDialog dialog = ProgressDialog.show(mContext, "Connexion en cours", "Chargement, veuillez patienter...", true);
+                if(mPassword2.getText().toString().equals("")) {
+                    mPassword2.setError("Vide");
+                    return;
+                }
 
-                MyPOVClient.client.login(mMail.getText().toString(), Utils.getMd5Hash(mPassword.getText().toString())).enqueue(new Callback<MyPOVResponse<User>>() {
+                if(!mPassword2.getText().toString().equals(mPassword1.getText().toString())) {
+                    mPassword1.setError("Les mots de passe ne correspondent pas");
+                    mPassword2.setError("Les mots de passe ne correspondent pas");
+                    return;
+                }
+
+                final ProgressDialog dialog = ProgressDialog.show(mContext, "Inscription en cours", "Chargement, veuillez patienter...", true);
+
+                MyPOVClient.client.register(mPseudo.getText().toString(), mMail.getText().toString(), Utils.getMd5Hash(mPassword1.getText().toString()), Utils.getMd5Hash(mPassword2.getText().toString())).enqueue(new Callback<MyPOVResponse<User>>() {
                     @Override
                     public void onResponse(Response<MyPOVResponse<User>> response, Retrofit retrofit) {
                         if (response.isSuccess()) {
                             if (response.body().getStatus() == 0) {
                                 User user = response.body().getObject();
-                                user.setPassword(Utils.getMd5Hash(mPassword.getText().toString()));
+                                user.setPassword(Utils.getMd5Hash(mPassword1.getText().toString()));
                                 new User(mContext).regist(user);
                                 exit();
                             } else {
@@ -86,10 +101,10 @@ public class Login extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.register_go_btn).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btn_login).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(mContext, Register.class));
+                startActivity(new Intent(mContext, Login.class));
                 finish();
             }
         });

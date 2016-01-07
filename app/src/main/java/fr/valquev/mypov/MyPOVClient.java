@@ -21,19 +21,25 @@ import retrofit.http.Query;
 public interface MyPOVClient {
 
     String BASE_URL = "https://mypov.fr/api/";
-    String CONNEXION = "connexion.php";
+    String LOGIN = "connexion.php";
+    String REGISTER = "inscription.php";
     String GET_OBSERVATIONS = "getObservations.php";
     String GET_LISTE_OBSERVATIONS = "getListeObservations.php";
     String GET_COMMENTAIRES = "getCommentaires.php";
     String ADD_COMMENTAIRE = "addCommentaire.php";
     String ADD_OBSERVATION = "addObservation.php";
+    String DELETE_OBSERVATION = "delObservation.php";
     String ADD_PHOTO_OBSERVATION = "addPhotoObservation.php";
 
     MyPOVClient client = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build().create(MyPOVClient.class);
 
     @FormUrlEncoded
-    @POST(CONNEXION)
+    @POST(LOGIN)
     Call<MyPOVResponse<User>> login(@Field("mail") String mail, @Field("pwd") String password);
+
+    @FormUrlEncoded
+    @POST(REGISTER)
+    Call<MyPOVResponse<User>> register(@Field("pseudo") String pseudo, @Field("mail") String mail, @Field("pwd") String password1, @Field("pwd2") String password2);
 
     @FormUrlEncoded
     @POST(GET_OBSERVATIONS)
@@ -41,7 +47,7 @@ public interface MyPOVClient {
 
     @FormUrlEncoded
     @POST(GET_LISTE_OBSERVATIONS)
-    Call<MyPOVResponse<List<Observation>>> getListeObservations(@Field("lat") double lat, @Field("lng") double lng, @Field("page") int page, @Field("tri") String tri, @Field("mail") String mail, @Field("pwd") String password);
+    Call<MyPOVResponse<List<Observation>>> getListeObservations(@Field("lat") double lat, @Field("lng") double lng, @Field("page") int page, @Field("id_user") int id_user, @Field("tri") String tri, @Field("mail") String mail, @Field("pwd") String password);
 
     @FormUrlEncoded
     @POST(GET_COMMENTAIRES)
@@ -58,4 +64,8 @@ public interface MyPOVClient {
     @Multipart
     @POST(ADD_PHOTO_OBSERVATION)
     Call<MyPOVResponse<String>> addPhotoObservation(@Part("img\"; filename=\"image.jpeg\" ") RequestBody file, @Part("id_obs") int id_obs, @Part("mail") String mail, @Part("pwd") String password);
+
+    @FormUrlEncoded
+    @POST(DELETE_OBSERVATION)
+    Call<MyPOVResponse<String>> deleteObservation(@Field("id_obs") int id, @Field("mail") String mail, @Field("pwd") String password);
 }

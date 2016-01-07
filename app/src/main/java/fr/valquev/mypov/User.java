@@ -3,6 +3,7 @@ package fr.valquev.mypov;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 
 /**
@@ -12,6 +13,10 @@ public class User {
 
     private final String DEFAULT = "NULL";
     private final String USER_SP = "UserSP";
+    private final String USER_TRI = "UserTRI";
+    private final String USER_FILTER = "UserFILTER";
+    private final String USER_POSITION = "UserPOSITION";
+    private final String USER_ZOOM = "UserZOOM";
 
     private SharedPreferences mSharedPreferences;
 
@@ -71,5 +76,37 @@ public class User {
 
     public long getInscridate() {
         return inscridate;
+    }
+
+    public void setPreferedTri(String tri) {
+        mSharedPreferences.edit().putString(USER_TRI, tri).apply();
+    }
+
+    public void setPreferedFilter(boolean me) {
+        mSharedPreferences.edit().putBoolean(USER_FILTER, me).apply();
+    }
+
+    public String getPreferedTri() {
+        return mSharedPreferences.getString(USER_TRI, "distance");
+    }
+
+    public boolean getPreferedFilter() {
+        return mSharedPreferences.getBoolean(USER_FILTER, false);
+    }
+
+    public LatLng getLastLatLng() {
+        return new LatLng(Double.parseDouble(mSharedPreferences.getString(USER_POSITION, "0::0").split("::")[0]), Double.parseDouble(mSharedPreferences.getString(USER_POSITION, "0::0").split("::")[1]));
+    }
+
+    public void setLastLatLng(LatLng position) {
+        mSharedPreferences.edit().putString(USER_POSITION, position.latitude + "::" + position.longitude).apply();
+    }
+
+    public float getZoom() {
+        return mSharedPreferences.getFloat(USER_ZOOM, 15);
+    }
+
+    public void setZoom(float zoom) {
+        mSharedPreferences.edit().putFloat(USER_ZOOM, zoom).apply();
     }
 }

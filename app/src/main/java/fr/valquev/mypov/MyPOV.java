@@ -74,6 +74,11 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
 
         mUser = new User(mContext);
 
+        if (!mUser.isLogged()) {
+            startActivity(new Intent(mContext, Login.class));
+            finish();
+        }
+
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -147,7 +152,9 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //getMenuInflater().inflate(R.menu.menu_main, menu);
+        if (mNavItemId == R.id.drawer_observations) {
+            getMenuInflater().inflate(R.menu.menu_main, menu);
+        }
         return true;
     }
 
@@ -156,7 +163,8 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
         int id = item.getItemId();
 
         switch(id) {
-            case R.id.action_settings:
+            case R.id.action_filter:
+                listeObservationFragment.openFilterDialog();
                 //startActivity(new Intent(mContext, Settings.class));
                 break;
 
@@ -169,19 +177,23 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
 
     private void navigate(int itemId) {
         Fragment newFragment;
+        mNavItemId = itemId;
+        supportInvalidateOptionsMenu();
         switch (itemId) {
             case R.id.drawer_map:
-                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
+                if (mUser.getLastLatLng().latitude == 0.0 && mUser.getLastLatLng().longitude == 0.0) {
+                    if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
                 }
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
                 newFragment = mapFragment;
                 break;
 
@@ -249,7 +261,9 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
     }
 
     @Override
-    public void update(LatLng position) {
+    public void update(LatLng position, float zoom) {
+        mUser.setLastLatLng(position);
+        mUser.setZoom(zoom);
         listeObservationFragment.update(position);
     }
 

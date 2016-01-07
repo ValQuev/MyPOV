@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@color/primary"
     android:fitsSystemWindows="true">
 
     <LinearLayout
@@ -18,7 +19,6 @@
             android:layout_marginBottom="24dp"
             android:layout_gravity="center_horizontal" />
 
-        <!-- Email Label -->
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,10 +28,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
-                android:hint="Mail" />
+                android:hint="Adresse mail" />
         </android.support.design.widget.TextInputLayout>
 
-        <!-- Password Label -->
         <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -49,17 +48,21 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="16dp"
+            android:textSize="16dip"
             android:padding="12dp"
-            android:text="Connexion"/>
+            android:text="Connexion"
+            style="@android:style/Widget.DeviceDefault.Button.Borderless"
+            android:textColor="@color/white" />
 
-        <TextView android:id="@+id/register_go_btn"
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/register_go_btn"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:text="Pas de compte ? Créez en un"
-            android:gravity="center"
-            android:textSize="16dip"/>
+            android:padding="12dp"
+            android:text="Créer un compte"
+            style="@android:style/Widget.DeviceDefault.Button.Borderless"
+            android:textColor="@color/white"/>
 
     </LinearLayout>
 </ScrollView>
