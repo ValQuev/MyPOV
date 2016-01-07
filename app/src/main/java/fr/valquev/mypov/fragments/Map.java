@@ -1,24 +1,24 @@
 package fr.valquev.mypov.fragments;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,15 +33,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
-import com.roomorama.caldroid.CaldroidFragment;
-import com.roomorama.caldroid.CaldroidListener;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.RequestBody;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 
+import fr.valquev.mypov.ImagePicker;
 import fr.valquev.mypov.MyPOV;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
@@ -60,6 +59,8 @@ import retrofit.Retrofit;
  */
 
 public class Map extends BaseFragment implements OnMapReadyCallback {
+
+    private static final int PICK_IMAGE = 100;
 
     private Context mContext;
     private GoogleMap mapInstance;
@@ -80,6 +81,9 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
     private LatLng addMarkerPos;
 
     private MarkerOptions addMarker;
+
+    private Bitmap imageFromResult;
+    private View dialogView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -253,47 +257,23 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
 
     private void dialogAddObservation() {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
-        final View v = getActivity().getLayoutInflater().inflate(R.layout.add_observation_dialog, null);
-        builder.setView(v);
-        builder.setTitle("Ajouter une observation");
-        CaldroidFragment caldroidFragment = new CaldroidFragment();
-        Bundle args = new Bundle();
-        final Calendar cal = Calendar.getInstance();
-        args.putInt(CaldroidFragment.MONTH, cal.get(Calendar.MONTH) + 1);
-        args.putInt(CaldroidFragment.YEAR, cal.get(Calendar.YEAR));
-        args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
-        caldroidFragment.setArguments(args);
-
-        caldroidFragment.setCaldroidListener(new CaldroidListener() {
+        dialogView = getActivity().getLayoutInflater().inflate(R.layout.add_observation_dialog, null);
+        ((DatePicker) dialogView.findViewById(R.id.observation_add_date)).setMaxDate(System.currentTimeMillis());
+        dialogView.findViewById(R.id.observation_add_pic).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onSelectDate(Date date, View view) {
-                cal.setTime(date);
-            }
-
-            @Override
-            public void onChangeMonth(int month, int year) {
-
-            }
-
-            @Override
-            public void onLongClickDate(Date date, View view) {
-
-            }
-
-            @Override
-            public void onCaldroidViewCreated() {
-
+            public void onClick(View v) {
+                Intent chooseImageIntent = ImagePicker.getPickImageIntent(mContext);
+                startActivityForResult(chooseImageIntent, PICK_IMAGE);
             }
         });
-
-        FragmentTransaction t = ((MyPOV) mContext).getSupportFragmentManager().beginTransaction();
-        t.replace(R.id.observation_add_date, caldroidFragment);
-        t.commit();
+        builder.setView(dialogView);
+        builder.setTitle("Ajouter une observation");
         builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                EditText nomET = (EditText) v.findViewById(R.id.observation_add_name_text);
-                EditText descriptionET = (EditText) v.findViewById(R.id.observation_add_description_text);
+                EditText nomET = (EditText) dialogView.findViewById(R.id.observation_add_name_text);
+                EditText descriptionET = (EditText) dialogView.findViewById(R.id.observation_add_description_text);
+                DatePicker datePicker = (DatePicker) dialogView.findViewById(R.id.observation_add_date);
 
                 String nom = nomET.getText().toString();
 
@@ -311,23 +291,29 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
 
                 dialogadding = ProgressDialog.show(mContext, "Ajout de l'observation", "Chargement, veuillez patienter...", true);
 
-                MyPOVClient.client.addObservation(nom, description, cal.getTimeInMillis() / 1000, addMarker.getPosition().latitude, addMarker.getPosition().longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                MyPOVClient.client.addObservation(nom, description, datePicker.getCalendarView().getDate() / 1000, addMarker.getPosition().latitude, addMarker.getPosition().longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<Observation>>() {
                     @Override
-                    public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
+                    public void onResponse(Response<MyPOVResponse<Observation>> response, Retrofit retrofit) {
                         if (response.isSuccess()) {
                             if (response.body().getStatus() == 0) {
-                                addMarker = null;
-                                setCameraPosition(centerScreen);
-                                fab.setVisibility(View.VISIBLE);
+                                if (imageFromResult != null) {
+                                    uploadImage(imageFromResult, response.body().getObject().getId());
+                                } else {
+                                    addMarker = null;
+                                    setCameraPosition(centerScreen);
+                                    fab.setVisibility(View.VISIBLE);
+                                    dialogadding.cancel();
+                                }
                             } else {
+                                dialogadding.cancel();
                                 Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
                                 mUser.logout();
                                 ((MyPOV) mContext).finish();
                             }
                         } else {
                             Toast.makeText(mContext, response.code() + " - " + response.message(), Toast.LENGTH_LONG).show();
+                            dialogadding.cancel();
                         }
-                        dialogadding.cancel();
                     }
 
                     @Override
@@ -338,7 +324,21 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                 });
             }
         });
-        builder.setNegativeButton("Annuler", null);
+        builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                addMarker = null;
+                setCameraPosition(centerScreen);
+                fab.setVisibility(View.VISIBLE);
+            }
+        });
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                addMarker = null;
+                fab.setVisibility(View.VISIBLE);
+            }
+        });
         builder.show();
     }
 
@@ -355,5 +355,75 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
 
     public void setPositionMapCenter(PositionMapCenter positionMapCenter) {
         this.positionMapCenter = positionMapCenter;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        if(resultCode == Activity.RESULT_OK) {
+            switch(requestCode) {
+                case PICK_IMAGE:
+                    imageFromResult = ImagePicker.getImageFromResult(mContext, resultCode, intent);
+                    dialogView.findViewById(R.id.observation_add_pic).setVisibility(View.GONE);
+                    ((ImageView) dialogView.findViewById(R.id.observation_add_thumbnail)).setImageBitmap(imageFromResult);
+                    dialogView.findViewById(R.id.observation_add_thumbnail).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ((ImageView) dialogView.findViewById(R.id.observation_add_thumbnail)).setImageBitmap(null);
+                            imageFromResult = null;
+                            dialogView.findViewById(R.id.observation_add_pic).setVisibility(View.VISIBLE);
+                        }
+                    });
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void uploadImage(Bitmap bitmap, int id_obs) {
+        final Bitmap userPic = ImagePicker.getResizedBitmap(bitmap, 512);
+
+        double size = (userPic.getByteCount() / 8) / 1000000;
+
+        if(size < 10D) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            userPic.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+            RequestBody requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), out.toByteArray());
+
+            MyPOVClient.client.addPhotoObservation(requestBody, id_obs, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                @Override
+                public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
+                    if (response.isSuccess()) {
+                        if (response.body().getStatus() == 0) {
+                            addMarker = null;
+                            imageFromResult = null;
+                            setCameraPosition(centerScreen);
+                            fab.setVisibility(View.VISIBLE);
+                            dialogadding.cancel();
+                        } else {
+                            dialogadding.cancel();
+                            Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                            mUser.logout();
+                            ((MyPOV) mContext).finish();
+                        }
+                    } else {
+                        Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
+                    }
+                    dialogadding.cancel();
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                    dialogadding.cancel();
+                }
+            });
+        } else {
+            Toast.makeText(mContext, "L'image doit faire moins de 10mo", Toast.LENGTH_LONG).show();
+        }
     }
 }

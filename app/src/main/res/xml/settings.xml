@@ -8,12 +8,17 @@
         <Preference
             android:key="pref_change_passwd"
             android:title="Mot de passe"
-            android:summary="Modifier mon mot de passe" />
+            android:summary="Modifier mon mot de passe." />
 
         <Preference
             android:key="pref_logout"
             android:title="Déconnexion"
-            android:summary="Se déconnecter de l\'application" />
+            android:summary="Se déconnecter de l\'application." />
+
+        <Preference
+            android:key="pref_del_account"
+            android:title="Supprimer mon compte"
+            android:summary="Cela vous déconnectera de l\'application tout en supprimant définitvement votre compte et vos observations." />
 
     </PreferenceCategory>
 </PreferenceScreen>

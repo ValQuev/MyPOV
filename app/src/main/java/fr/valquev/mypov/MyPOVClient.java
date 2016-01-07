@@ -1,5 +1,6 @@
 package fr.valquev.mypov;
 
+import com.google.gson.JsonElement;
 import com.squareup.okhttp.RequestBody;
 
 import java.util.List;
@@ -23,6 +24,8 @@ public interface MyPOVClient {
     String BASE_URL = "https://mypov.fr/api/";
     String LOGIN = "connexion.php";
     String REGISTER = "inscription.php";
+    String DEL_ACCOUNT = "delUser.php";
+    String UPDATE_PASSWORD = "setPassword.php";
     String GET_OBSERVATIONS = "getObservations.php";
     String GET_LISTE_OBSERVATIONS = "getListeObservations.php";
     String GET_COMMENTAIRES = "getCommentaires.php";
@@ -30,6 +33,10 @@ public interface MyPOVClient {
     String ADD_OBSERVATION = "addObservation.php";
     String DELETE_OBSERVATION = "delObservation.php";
     String ADD_PHOTO_OBSERVATION = "addPhotoObservation.php";
+    String GET_NOTE_OBSERVATION = "getNoteObservation.php";
+    String SET_NOTE_OBSERVATION = "setNote.php";
+    String ADD_NOTE_OBSERVATION = "addNote.php";
+    String DEL_NOTE_OBSERVATION = "delNote.php";
 
     MyPOVClient client = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build().create(MyPOVClient.class);
 
@@ -40,6 +47,14 @@ public interface MyPOVClient {
     @FormUrlEncoded
     @POST(REGISTER)
     Call<MyPOVResponse<User>> register(@Field("pseudo") String pseudo, @Field("mail") String mail, @Field("pwd") String password1, @Field("pwd2") String password2);
+
+    @FormUrlEncoded
+    @POST(DEL_ACCOUNT)
+    Call<MyPOVResponse<String>> delAccount(@Field("mail") String mail, @Field("pwd") String password);
+
+    @FormUrlEncoded
+    @POST(UPDATE_PASSWORD)
+    Call<MyPOVResponse<String>> updatePassword(@Field("mail") String mail, @Field("pwd") String password, @Field("oldpwd") String oldpwd, @Field("newpwd") String newpwd, @Field("newpwd2") String newpwd2);
 
     @FormUrlEncoded
     @POST(GET_OBSERVATIONS)
@@ -59,7 +74,7 @@ public interface MyPOVClient {
 
     @FormUrlEncoded
     @POST(ADD_OBSERVATION)
-    Call<MyPOVResponse<String>> addObservation(@Field("nom") String nom, @Field("description") String description, @Field("date") long date, @Field("lat") double lat, @Field("lng") double lng, @Field("mail") String mail, @Field("pwd") String password);
+    Call<MyPOVResponse<Observation>> addObservation(@Field("nom") String nom, @Field("description") String description, @Field("date") long date, @Field("lat") double lat, @Field("lng") double lng, @Field("mail") String mail, @Field("pwd") String password);
 
     @Multipart
     @POST(ADD_PHOTO_OBSERVATION)
@@ -67,5 +82,24 @@ public interface MyPOVClient {
 
     @FormUrlEncoded
     @POST(DELETE_OBSERVATION)
-    Call<MyPOVResponse<String>> deleteObservation(@Field("id_obs") int id, @Field("mail") String mail, @Field("pwd") String password);
+    Call<MyPOVResponse<String>> deleteObservation(@Field("id_obs") int id_obs, @Field("mail") String mail, @Field("pwd") String password);
+
+    @FormUrlEncoded
+    @POST(GET_NOTE_OBSERVATION)
+    Call<MyPOVResponse<List<Note>>> getNoteObservation(@Field("id_obs") int id_obs, @Field("mail") String mail, @Field("pwd") String password);
+
+
+    @FormUrlEncoded
+    @POST(SET_NOTE_OBSERVATION)
+    Call<MyPOVResponse<List<String>>> setNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("note") int note, @Field("mail") String mail, @Field("pwd") String password);
+
+
+    @FormUrlEncoded
+    @POST(ADD_NOTE_OBSERVATION)
+    Call<MyPOVResponse<List<String>>> addNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("note") int note, @Field("mail") String mail, @Field("pwd") String password);
+
+
+    @FormUrlEncoded
+    @POST(DEL_NOTE_OBSERVATION)
+    Call<MyPOVResponse<List<String>>> delNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("mail") String mail, @Field("pwd") String password);
 }

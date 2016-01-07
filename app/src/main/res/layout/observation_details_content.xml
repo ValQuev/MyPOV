@@ -49,56 +49,87 @@
     </RelativeLayout>
 
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:gravity="right">
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="left|center_vertical"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Medium Text"
             android:id="@+id/observation_content_date"
             android:layout_marginRight="20dp" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="0"
-            android:id="@+id/tv_affirmation"
-            android:textColor="#298900" />
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true">
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:id="@+id/affirmer"
-            android:tint="@android:color/black"
-            android:src="@drawable/ic_thumb_up_black_24dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginLeft="5dp" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginRight="8dp"
+                android:id="@+id/observation_note_affirmer">
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:id="@+id/infirmer"
-            android:tint="@android:color/black"
-            android:src="@drawable/ic_thumb_down_black_24dp"
-            android:layout_marginRight="5dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="0"
+                    android:id="@+id/tv_affirmation"
+                    android:textColor="#298900" />
 
-        <TextView
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center_vertical"
+                    android:id="@+id/affirmer"
+                    android:tint="@android:color/black"
+                    android:src="@drawable/ic_thumb_up_black_24dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginLeft="5dp" />
+
+            </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="0"
-            android:id="@+id/tv_infirmation"
-            android:textColor="#a50000" />
-    </LinearLayout>
+            android:orientation="horizontal"
+            android:id="@+id/observation_note_infirmer">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/infirmer"
+                android:tint="@android:color/black"
+                android:src="@drawable/ic_thumb_down_black_24dp"
+                android:layout_marginRight="5dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:text="0"
+                android:id="@+id/tv_infirmation"
+                android:textColor="#a50000" />
+
+        </LinearLayout>
+
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
     <TextView
         android:layout_width="match_parent"

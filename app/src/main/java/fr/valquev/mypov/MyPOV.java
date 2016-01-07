@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
@@ -165,7 +166,6 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
         switch(id) {
             case R.id.action_filter:
                 listeObservationFragment.openFilterDialog();
-                //startActivity(new Intent(mContext, Settings.class));
                 break;
 
             default:
@@ -182,14 +182,8 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
         switch (itemId) {
             case R.id.drawer_map:
                 if (mUser.getLastLatLng().latitude == 0.0 && mUser.getLastLatLng().longitude == 0.0) {
-                    if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
+                    if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, ASK_FINE_LOCATION_PERMISSION);
                         return;
                     }
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
@@ -236,7 +230,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
     @Override
     public void onLocationChanged(Location location) {
         mapFragment.setCameraPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, ASK_COARSE_LOCATION_PERMISSION);
             }
@@ -276,10 +270,11 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                 } else {
                     // VIENT DE REFUSER LA PERM
                 }
-                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                         // REFUS DE LA PERM DEPUIS UN CERTAIN TEMPS
                         Log.v("PERMISSION_ASK", "DEJA REFUSE");
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ASK_FINE_LOCATION_PERMISSION);
                     } else {
                         // PAS ENCORE DEMANDE LA PERM
                         Log.v("PERMISSION_ASK", "DEMANDE");
@@ -293,11 +288,21 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
             case ASK_FINE_LOCATION_PERMISSION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.v("PERMISSION_RESULT", "ACCEPTE");
+                    finish();
+                    startActivity(new Intent(mContext, MyPOV.class));
                 } else {
                     Log.v("PERMISSION_RESULT", "REFUSE");
                 }
                 return;
             }
         }
+        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(NAV_ITEM_ID, mNavItemId);
     }
 }

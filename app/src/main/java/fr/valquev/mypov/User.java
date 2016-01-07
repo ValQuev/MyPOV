@@ -2,9 +2,13 @@ package fr.valquev.mypov;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Created by ValQuev on 28/09/15.
@@ -64,6 +68,16 @@ public class User {
 
     public String getMail() {
         return mail;
+    }
+
+    public void updatePassword(String password) {
+        if(isLogged()) {
+            try {
+                mSharedPreferences.edit().putString(USER_SP, String.valueOf(new JSONObject(mSharedPreferences.getString(USER_SP, DEFAULT)).put("password", password))).apply();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public String getPassword() {
