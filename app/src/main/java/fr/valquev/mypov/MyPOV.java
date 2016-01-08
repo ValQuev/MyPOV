@@ -282,9 +282,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                         Log.v("PERMISSION_ASK", "DEMANDE");
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, ASK_FINE_LOCATION_PERMISSION);
                     }
-                    return;
                 }
-                return;
             }
 
             case ASK_FINE_LOCATION_PERMISSION: {
@@ -295,7 +293,6 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                 } else {
                     Log.v("PERMISSION_RESULT", "REFUSE");
                 }
-                return;
             }
         }
         if (!mUser.isLogged()) {
