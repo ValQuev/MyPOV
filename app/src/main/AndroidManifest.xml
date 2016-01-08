@@ -25,9 +25,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.AddObservation"
-            android:label="@string/title_activity_observation" />
         <activity android:name=".activities.ObservationDetails" />
         <activity
             android:name=".activities.Login"
@@ -36,6 +33,10 @@
         <activity
             android:name=".activities.Register"
             android:label="@string/register" />
+
+        <activity
+            android:name=".activities.NewLocation"
+            android:label="@string/new_location" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

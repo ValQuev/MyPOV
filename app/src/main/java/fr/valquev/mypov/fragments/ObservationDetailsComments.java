@@ -83,7 +83,7 @@ public class ObservationDetailsComments extends BaseFragment {
                         if(commentList != null) {
                             mCommentList.setAdapter(new ObservationDetailsCommentsAdapter(commentList));
                             if (!firstLoad) {
-                                ((ObservationDetails) mContext).setNbCommentsTitle(commentList.size());
+                                //((ObservationDetails) mContext).setNbCommentsTitle(commentList.size());
                             }
                             mSwipeRefreshLayout.setRefreshing(false);
                         } else {

@@ -1,9 +1,14 @@
 package fr.valquev.mypov.fragments;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -81,12 +86,60 @@ public class ObservationDetailsContent extends BaseFragment {
         getMyNotes();
 
         ImageView map = new ImageView(mContext);
+        map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Uri gmmIntentUri = Uri.parse("geo:"+ mObservation.getLat() +","+ mObservation.getLng());
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+            }
+        });
         String pos = mObservation.getLat() + "," + mObservation.getLng();
         Picasso.with(mContext).load("https://maps.googleapis.com/maps/api/staticmap?center=" + pos + "&zoom=13&markers=" + pos + "&size=640x480&scale=2").centerCrop().fit().into(map);
         mViewFlipper.addView(map);
 
-        for (ObservationPhoto photo : mObservation.getPhotos()) {
-            ImageView imageView = new ImageView(mContext);
+        for (final ObservationPhoto photo : mObservation.getPhotos()) {
+            final ImageView imageView = new ImageView(mContext);
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
+                    builder.setTitle("Supprimer cette image");
+                    builder.setMessage("Voulez-vous vraiment supprimer définitivement cette image ?");
+                    builder.setNegativeButton("Non", null);
+                    builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            final ProgressDialog dialogdel = ProgressDialog.show(mContext, "Suppression en cours", "Chargement, veuillez patienter...", true);
+                            MyPOVClient.client.deletePic(photo.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                                @Override
+                                public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
+                                    if (response.isSuccess()) {
+                                        if (response.body().getStatus() == 0) {
+                                            mViewFlipper.removeView(imageView);
+                                            Toast.makeText(mContext, "Photo supprimée", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                                            mUser.logout();
+                                        }
+                                    } else {
+                                        Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
+                                    }
+                                    dialogdel.cancel();
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+                                    Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                                    dialogdel.cancel();
+                                }
+                            });
+                        }
+                    });
+                    builder.show();
+                }
+            });
             Picasso.with(mContext).load("https://mypov.fr/uploads/observations/" + mObservation.getId() + "/" + photo.getId() + "." + photo.getFormat()).centerCrop().fit().into(imageView);
             mViewFlipper.addView(imageView);
         }
@@ -133,9 +186,9 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_infirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        MyPOVClient.client.delNoteObservation(mObservation.getId(), mUser.getId_user(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<String>>>() {
+                                        MyPOVClient.client.delNoteObservation(mObservation.getId(), mUser.getId_user(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
-                                            public void onResponse(Response<MyPOVResponse<List<String>>> response, Retrofit retrofit) {
+                                            public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                                                 ((ImageView) view.findViewById(R.id.infirmer)).setColorFilter(Color.parseColor("#000000"));
                                                 int newnote = Integer.parseInt(infirmation.getText().toString());
                                                 newnote--;
@@ -153,9 +206,9 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_affirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        MyPOVClient.client.setNoteObservation(mObservation.getId(), mUser.getId_user(), 1, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<String>>>() {
+                                        MyPOVClient.client.setNoteObservation(mObservation.getId(), mUser.getId_user(), 1, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
-                                            public void onResponse(Response<MyPOVResponse<List<String>>> response, Retrofit retrofit) {
+                                            public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                                                 int newnote = Integer.parseInt(infirmation.getText().toString());
                                                 newnote--;
                                                 infirmation.setText(String.format("%d", newnote));
@@ -179,9 +232,9 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_infirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        MyPOVClient.client.setNoteObservation(mObservation.getId(), mUser.getId_user(), 0, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<String>>>() {
+                                        MyPOVClient.client.setNoteObservation(mObservation.getId(), mUser.getId_user(), 0, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
-                                            public void onResponse(Response<MyPOVResponse<List<String>>> response, Retrofit retrofit) {
+                                            public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                                                 int newnote = Integer.parseInt(infirmation.getText().toString());
                                                 newnote++;
                                                 infirmation.setText(String.format("%d", newnote));
@@ -203,9 +256,9 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_affirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        MyPOVClient.client.delNoteObservation(mObservation.getId(), mUser.getId_user(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<String>>>() {
+                                        MyPOVClient.client.delNoteObservation(mObservation.getId(), mUser.getId_user(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
-                                            public void onResponse(Response<MyPOVResponse<List<String>>> response, Retrofit retrofit) {
+                                            public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                                                 int newnote2 = Integer.parseInt(affirmation.getText().toString());
                                                 newnote2--;
                                                 affirmation.setText(String.format("%d", newnote2));
@@ -247,9 +300,9 @@ public class ObservationDetailsContent extends BaseFragment {
         view.findViewById(R.id.observation_note_infirmer).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyPOVClient.client.addNoteObservation(mObservation.getId(), mUser.getId_user(), 0, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<String>>>() {
+                MyPOVClient.client.addNoteObservation(mObservation.getId(), mUser.getId_user(), 0, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
-                    public void onResponse(Response<MyPOVResponse<List<String>>> response, Retrofit retrofit) {
+                    public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                         int newnote = Integer.parseInt(infirmation.getText().toString());
                         newnote++;
                         infirmation.setText(String.format("%d", newnote));
@@ -268,9 +321,9 @@ public class ObservationDetailsContent extends BaseFragment {
         view.findViewById(R.id.observation_note_affirmer).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyPOVClient.client.addNoteObservation(mObservation.getId(), mUser.getId_user(), 1, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<String>>>() {
+                MyPOVClient.client.addNoteObservation(mObservation.getId(), mUser.getId_user(), 1, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
-                    public void onResponse(Response<MyPOVResponse<List<String>>> response, Retrofit retrofit) {
+                    public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
                         int newnote2 = Integer.parseInt(affirmation.getText().toString());
                         newnote2++;
                         affirmation.setText(String.format("%d", newnote2));

@@ -17,7 +17,7 @@
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
                 android:hint="Nom de l'observation"
-                android:id="@+id/observation_add_name_text"
+                android:id="@+id/observation_modif_name_text"
                 android:layout_gravity="center_horizontal" />
 
             <EditText
@@ -25,27 +25,20 @@
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
                 android:hint="Description de l'observation"
-                android:id="@+id/observation_add_description_text"
+                android:id="@+id/observation_modif_description_text"
                 android:layout_gravity="center_horizontal" />
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/observation_add_pic"
-                android:layout_marginRight="16dp"
-                android:layout_gravity="right"
-                android:text="Ajouter une image"/>
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/observation_add_thumbnail" />
+                android:id="@+id/observation_modif_localisation"
+                android:text="Modifier localisation"/>
 
             <DatePicker
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:calendarViewShown="false"
-                android:id="@+id/observation_add_date"/>
+                android:id="@+id/observation_modif_date"/>
 
         </LinearLayout>
 

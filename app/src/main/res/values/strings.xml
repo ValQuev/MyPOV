@@ -15,5 +15,6 @@
     <string name="comments_up">COMMENTAIRES</string>
     <string name="login">Connexion</string>
     <string name="register">Inscription</string>
+    <string name="new_location">Nouvelle localisation</string>
     <string name="filter">Filtre</string>
 </resources>

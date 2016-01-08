@@ -31,12 +31,14 @@ public interface MyPOVClient {
     String GET_COMMENTAIRES = "getCommentaires.php";
     String ADD_COMMENTAIRE = "addCommentaire.php";
     String ADD_OBSERVATION = "addObservation.php";
+    String SET_OBSERVATION = "setObservation.php";
     String DELETE_OBSERVATION = "delObservation.php";
     String ADD_PHOTO_OBSERVATION = "addPhotoObservation.php";
     String GET_NOTE_OBSERVATION = "getNoteObservation.php";
     String SET_NOTE_OBSERVATION = "setNote.php";
     String ADD_NOTE_OBSERVATION = "addNote.php";
     String DEL_NOTE_OBSERVATION = "delNote.php";
+    String DEL_PHOTO_OBSERVATION = "delPhotoObservation.php";
 
     MyPOVClient client = new Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build().create(MyPOVClient.class);
 
@@ -91,15 +93,23 @@ public interface MyPOVClient {
 
     @FormUrlEncoded
     @POST(SET_NOTE_OBSERVATION)
-    Call<MyPOVResponse<List<String>>> setNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("note") int note, @Field("mail") String mail, @Field("pwd") String password);
+    Call<MyPOVResponse<String>> setNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("note") int note, @Field("mail") String mail, @Field("pwd") String password);
 
 
     @FormUrlEncoded
     @POST(ADD_NOTE_OBSERVATION)
-    Call<MyPOVResponse<List<String>>> addNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("note") int note, @Field("mail") String mail, @Field("pwd") String password);
+    Call<MyPOVResponse<String>> addNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("note") int note, @Field("mail") String mail, @Field("pwd") String password);
 
 
     @FormUrlEncoded
     @POST(DEL_NOTE_OBSERVATION)
-    Call<MyPOVResponse<List<String>>> delNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("mail") String mail, @Field("pwd") String password);
+    Call<MyPOVResponse<String>> delNoteObservation(@Field("id_obs") int id_obs, @Field("id_user") int id_user, @Field("mail") String mail, @Field("pwd") String password);
+
+    @FormUrlEncoded
+    @POST(SET_OBSERVATION)
+    Call<MyPOVResponse<Observation>> setObservation(@Field("id_obs") int id_obs, @Field("lat") double lat, @Field("lng") double lng, @Field("nom") String nom, @Field("description") String description, @Field("date") long date, @Field("mail") String mail, @Field("pwd") String password);
+
+    @FormUrlEncoded
+    @POST(DEL_PHOTO_OBSERVATION)
+    Call<MyPOVResponse<String>> deletePic(@Field("id_photo") int id_photo, @Field("mail") String mail, @Field("pwd") String password);
 }

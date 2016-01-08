@@ -259,6 +259,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
         dialogView = getActivity().getLayoutInflater().inflate(R.layout.add_observation_dialog, null);
         ((DatePicker) dialogView.findViewById(R.id.observation_add_date)).setMaxDate(System.currentTimeMillis());
+        ((DatePicker) dialogView.findViewById(R.id.observation_add_date)).setCalendarViewShown(false);
         dialogView.findViewById(R.id.observation_add_pic).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -290,8 +291,9 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                 }
 
                 dialogadding = ProgressDialog.show(mContext, "Ajout de l'observation", "Chargement, veuillez patienter...", true);
-
-                MyPOVClient.client.addObservation(nom, description, datePicker.getCalendarView().getDate() / 1000, addMarker.getPosition().latitude, addMarker.getPosition().longitude, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<Observation>>() {
+//datePicker.getCalendarView().getDate()
+                MyPOVClient.client.addObservation(nom, description, System.currentTimeMillis() / 1000, addMarker.getPosition().latitude, addMarker.getPosition().longitude, mUser.getMail(), mUser.getPassword()).
+                enqueue(new Callback<MyPOVResponse<Observation>>() {
                     @Override
                     public void onResponse(Response<MyPOVResponse<Observation>> response, Retrofit retrofit) {
                         if (response.isSuccess()) {

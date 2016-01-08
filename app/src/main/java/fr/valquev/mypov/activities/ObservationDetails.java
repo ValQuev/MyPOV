@@ -19,15 +19,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.RequestBody;
 
 import java.io.ByteArrayOutputStream;
 
 import fr.valquev.mypov.ImagePicker;
+import fr.valquev.mypov.MyPOV;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.NoSwipeViewPager;
@@ -47,6 +50,7 @@ import retrofit.Retrofit;
 public class ObservationDetails extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 100;
+    private static final int NEW_LOCATION = 101;
 
     private Context mContext;
     private NoSwipeViewPager mViewPager;
@@ -59,6 +63,11 @@ public class ObservationDetails extends AppCompatActivity {
     private ObservationDetailsFragmentsAdapter adapter;
     private ObservationDetailsComments commentFrag;
     private ObservationDetailsContent descriptionFrag;
+
+    private View dialogView;
+    private ProgressDialog dialogUpdating;
+
+    private LatLng newLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +83,8 @@ public class ObservationDetails extends AppCompatActivity {
         }
 
         mObservation = getIntent().getParcelableExtra("observation");
+
+        newLocation = new LatLng(mObservation.getLat(), mObservation.getLng());
 
         Bundle observation = new Bundle();
         observation.putParcelable("observation", mObservation);
@@ -235,7 +246,7 @@ public class ObservationDetails extends AppCompatActivity {
                         startActivity(i);
                         Toast.makeText(mContext, "Veuillez installer Google Maps", Toast.LENGTH_SHORT).show();
                     }
-                } else if(item.getTitle().equals("Supprimer cette observation")) {
+                } else if(item.getTitle().equals("Supprimer l'observation")) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
                     builder.setTitle(mObservation.getNom());
                     builder.setMessage("Attention ! Il est impossible de restaurer une observation supprimée. Êtes-vous bien sûr de vouloir supprimer cette observation ?");
@@ -271,6 +282,81 @@ public class ObservationDetails extends AppCompatActivity {
                         }
                     });
                     builder.show();
+                } else if(item.getTitle().equals("Modifier l'observation")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
+                    dialogView = getLayoutInflater().inflate(R.layout.dialog_modif_observation, null);
+                    ((DatePicker) dialogView.findViewById(R.id.observation_modif_date)).setMaxDate(System.currentTimeMillis());
+                    ((DatePicker) dialogView.findViewById(R.id.observation_modif_date)).setCalendarViewShown(false);
+                    ((DatePicker) dialogView.findViewById(R.id.observation_modif_date)).setSpinnersShown(true);
+                    dialogView.findViewById(R.id.observation_modif_localisation).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent i = new Intent(mContext, NewLocation.class);
+                            i.putExtra("observation", mObservation);
+                            startActivityForResult(i, NEW_LOCATION);
+                        }
+                    });
+                    ((EditText) dialogView.findViewById(R.id.observation_modif_name_text)).setText(mObservation.getNom());
+                    ((EditText) dialogView.findViewById(R.id.observation_modif_description_text)).setText(mObservation.getDescription());
+                    builder.setView(dialogView);
+                    builder.setTitle("Modifier une observation");
+                    builder.setPositiveButton("Modifier", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            EditText nomET = (EditText) dialogView.findViewById(R.id.observation_modif_name_text);
+                            EditText descriptionET = (EditText) dialogView.findViewById(R.id.observation_modif_description_text);
+                            DatePicker datePicker = (DatePicker) dialogView.findViewById(R.id.observation_modif_date);
+
+                            String nom = nomET.getText().toString();
+
+                            if (nom.equals("")) {
+                                nomET.setError("Vide");
+                                return;
+                            }
+
+                            String description = descriptionET.getText().toString();
+
+                            if (description.equals("")) {
+                                descriptionET.setError("Vide");
+                                return;
+                            }
+
+                            dialogUpdating = ProgressDialog.show(mContext, "Modification de l'observation", "Chargement, veuillez patienter...", true);
+//datePicker.getCalendarView().getDate()
+                            MyPOVClient.client.setObservation(mObservation.getId(), newLocation.latitude, newLocation.longitude, nom, description, System.currentTimeMillis() / 1000, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<Observation>>() {
+                                @Override
+                                public void onResponse(Response<MyPOVResponse<Observation>> response, Retrofit retrofit) {
+                                    if (response.isSuccess()) {
+                                        if (response.body().getStatus() == 0) {
+                                            mObservation = response.body().getObject();
+                                            Intent intent = new Intent(mContext, ObservationDetails.class);
+                                            intent.putExtra("observation", mObservation);
+                                            startActivity(intent);
+                                            finish();
+                                            Toast.makeText(mContext, "Modification effectuée", Toast.LENGTH_LONG).show();
+                                            dialogUpdating.cancel();
+                                        } else {
+                                            dialogUpdating.cancel();
+                                            Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                                            mUser.logout();
+                                            finish();
+                                        }
+                                    } else {
+                                        Toast.makeText(mContext, response.code() + " - " + response.message(), Toast.LENGTH_LONG).show();
+                                        dialogUpdating.cancel();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+                                    Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                                    dialogUpdating.cancel();
+                                }
+                            });
+                        }
+                    });
+                    builder.setNegativeButton("Annuler", null);
+                    builder.show();
                 }
                 break;
 
@@ -292,15 +378,16 @@ public class ObservationDetails extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (mObservation.getObservateur().getId_user() == mUser.getId_user()) {
+            menu.add("Modifier l'observation");
             menu.add("Ajouter une photo");
-            menu.add("Supprimer cette observation");
+            menu.add("Supprimer l'observation");
         }
         menu.add("Itinéraire");
         return true;
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+    public void onActivityResult(int requestCode, int resultCode, Intent intent){
         super.onActivityResult(requestCode, resultCode, intent);
 
         if(resultCode == Activity.RESULT_OK) {
@@ -309,6 +396,10 @@ public class ObservationDetails extends AppCompatActivity {
                     Bitmap bitmap = ImagePicker.getImageFromResult(this, resultCode, intent);
                     uploadImage(bitmap);
                     break;
+
+                case NEW_LOCATION:
+                    newLocation = (LatLng) intent.getExtras().get("location");
+                    Toast.makeText(mContext, "Nouvelle localisation enregistrée", Toast.LENGTH_SHORT).show();
 
                 default:
                     break;
