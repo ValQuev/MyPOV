@@ -13,6 +13,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -189,6 +190,21 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
         MyPOVClient.client.getObservations(mapInstance.getCameraPosition().target.latitude, mapInstance.getCameraPosition().target.longitude, distance, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Observation>>>() {
             @Override
             public void onResponse(Response<MyPOVResponse<List<Observation>>> response, Retrofit retrofit) {
+                mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Log.v("TEST", "DRAGGABLE = " + marker.isDraggable());
+                        if (marker.isDraggable()) {
+                            dialogAddObservation();
+                        } else {
+                            Observation observationClicked = markerObservationHashMap.get(marker);
+                            Intent intent = new Intent(mContext, ObservationDetails.class);
+                            intent.putExtra("observation", observationClicked);
+                            startActivity(intent);
+                        }
+                        return false;
+                    }
+                });
                 if (response.isSuccess()) {
                     if (response.body().getStatus() == 0) {
                         mapInstance.clear();
@@ -207,20 +223,6 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                                 Marker marker = mapInstance.addMarker(new MarkerOptions().position(new LatLng(observation.getLat(), observation.getLng())).icon(color));
                                 markerObservationHashMap.put(marker, observation);
                             }
-                            mapInstance.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                                @Override
-                                public boolean onMarkerClick(Marker marker) {
-                                    if (marker.isDraggable()) {
-                                        dialogAddObservation();
-                                    } else {
-                                        Observation observationClicked = markerObservationHashMap.get(marker);
-                                        Intent intent = new Intent(mContext, ObservationDetails.class);
-                                        intent.putExtra("observation", observationClicked);
-                                        startActivity(intent);
-                                    }
-                                    return false;
-                                }
-                            });
                         } else {
                             if (dialoading != null) {
                                 if (!dialoading.isShowing()) {

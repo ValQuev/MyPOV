@@ -360,13 +360,6 @@ public class ObservationDetails extends AppCompatActivity {
                 }
                 break;
 
-            case 1:
-                Uri gmmIntentUri = Uri.parse("geo:"+ mObservation.getLat() +","+ mObservation.getLng());
-                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-                mapIntent.setPackage("com.google.android.apps.maps");
-                startActivity(mapIntent);
-                break;
-
             case android.R.id.home:
                 finish();
                 break;

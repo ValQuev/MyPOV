@@ -89,7 +89,7 @@ public class ObservationDetailsContent extends BaseFragment {
         map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri gmmIntentUri = Uri.parse("geo:"+ mObservation.getLat() +","+ mObservation.getLng());
+                Uri gmmIntentUri = Uri.parse("geo:"+ mObservation.getLat() +","+ mObservation.getLng() +"?q="+ mObservation.getLat() +","+ mObservation.getLng() +"(" + mObservation.getNom() + ")");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
                 startActivity(mapIntent);
