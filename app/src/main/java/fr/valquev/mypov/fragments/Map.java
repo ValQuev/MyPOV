@@ -236,6 +236,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                         }
                     } else {
                         Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                        mUser.logout();
                     }
                 } else {
                     Toast.makeText(mContext, response.code() + " - " + response.message(), Toast.LENGTH_LONG).show();

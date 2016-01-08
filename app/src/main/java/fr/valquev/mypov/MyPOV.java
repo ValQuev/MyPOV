@@ -295,6 +295,9 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                 }
             }
         }
+
+        Log.v("LOGGED", "LOGGED = " + mUser.isLogged());
+
         if (!mUser.isLogged()) {
             startActivity(new Intent(mContext, Login.class));
             finish();
