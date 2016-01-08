@@ -78,6 +78,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
         if (!mUser.isLogged()) {
             startActivity(new Intent(mContext, Login.class));
             finish();
+            return;
         }
 
         locationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
@@ -218,6 +219,7 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
         if (!mUser.isLogged()) {
             startActivity(new Intent(mContext, Login.class));
             finish();
+            return;
         }
 
         displayUserInfos();
@@ -295,6 +297,10 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
                 }
                 return;
             }
+        }
+        if (!mUser.isLogged()) {
+            startActivity(new Intent(mContext, Login.class));
+            finish();
         }
         //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
     }
