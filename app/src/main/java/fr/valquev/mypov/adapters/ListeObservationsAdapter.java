@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import fr.valquev.mypov.OnObservationListItemClickListener;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.activities.ObservationDetails;
 
@@ -22,11 +23,11 @@ import fr.valquev.mypov.activities.ObservationDetails;
  */
 public class ListeObservationsAdapter extends RecyclerView.Adapter<ListeObservationsAdapter.ListeObservationsViewHolder>{
 
-    private Context mContext;
+    private OnObservationListItemClickListener listener;
     private List<Observation> mObservationsListe;
 
     public ListeObservationsAdapter(List<Observation> observationsListe, Context context) {
-        mContext = context;
+        listener = (OnObservationListItemClickListener) context;
         mObservationsListe = observationsListe;
     }
 
@@ -48,9 +49,7 @@ public class ListeObservationsAdapter extends RecyclerView.Adapter<ListeObservat
         listeObservationsViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, ObservationDetails.class);
-                intent.putExtra("observation", observation);
-                mContext.startActivity(intent);
+                listener.onObservationClick(observation);
             }
         });
     }

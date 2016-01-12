@@ -22,9 +22,11 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.List;
 
+import fr.valquev.mypov.MyPOV;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.Observation;
+import fr.valquev.mypov.OnObservationListItemClickListener;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.User;
 import fr.valquev.mypov.activities.Login;

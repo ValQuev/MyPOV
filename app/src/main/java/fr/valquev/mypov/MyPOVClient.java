@@ -21,7 +21,8 @@ import retrofit.http.Query;
  */
 public interface MyPOVClient {
 
-    String BASE_URL = "https://mypov.fr/api/";
+    String TEST = "_test";
+    String BASE_URL = "https://mypov.fr/api" + TEST + "/";
     String LOGIN = "connexion.php";
     String REGISTER = "inscription.php";
     String DEL_ACCOUNT = "delUser.php";

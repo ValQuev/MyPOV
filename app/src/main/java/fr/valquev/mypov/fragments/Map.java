@@ -200,7 +200,7 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
                             Observation observationClicked = markerObservationHashMap.get(marker);
                             Intent intent = new Intent(mContext, ObservationDetails.class);
                             intent.putExtra("observation", observationClicked);
-                            startActivity(intent);
+                            ((MyPOV) mContext).startActivityForResult(intent, MyPOV.OBSERVATION_CLICK);
                         }
                         return false;
                     }
@@ -348,8 +348,12 @@ public class Map extends BaseFragment implements OnMapReadyCallback {
     }
 
     public void setCameraPosition(LatLng position) {
+        setCameraPosition(position, 15);
+    }
+
+    public void setCameraPosition(LatLng position, float zoom) {
         if (mapInstance != null) {
-            mapInstance.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+            mapInstance.animateCamera(CameraUpdateFactory.newLatLngZoom(position, zoom));
             if (dialoading != null) {
                 if (dialoading.isShowing()) {
                     dialoading.cancel();

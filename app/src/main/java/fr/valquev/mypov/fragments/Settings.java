@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.preference.Preference;
@@ -173,6 +174,24 @@ public class Settings extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+        findPreference("pref_about_iut").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.iut-laval.univ-lemans.fr/fr/info-informatique-et-programmation/dut-informatique.html")));
+                return true;
+            }
+        });
+
+        for (int i = 0; i < 5; i++) {
+            findPreference("pref_about_" + i).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(preference.getSummary() + "")));
+                    return true;
+                }
+            });
+        }
     }
 
     @Override

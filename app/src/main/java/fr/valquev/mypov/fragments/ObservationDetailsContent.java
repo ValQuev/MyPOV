@@ -1,5 +1,6 @@
 package fr.valquev.mypov.fragments;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,6 +34,7 @@ import fr.valquev.mypov.ObservationPhoto;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.SwipeGestureListener;
 import fr.valquev.mypov.User;
+import fr.valquev.mypov.activities.OnPicMapClickListener;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
@@ -83,63 +85,72 @@ public class ObservationDetailsContent extends BaseFragment {
 
         texte.setText(String.format("%s", mObservation.getDescription()));
 
-        getMyNotes();
+        getMyNotes(null);
 
         ImageView map = new ImageView(mContext);
         map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Uri gmmIntentUri = Uri.parse("geo:"+ mObservation.getLat() +","+ mObservation.getLng() +"?q="+ mObservation.getLat() +","+ mObservation.getLng() +"(" + mObservation.getNom() + ")");
+                /*Uri gmmIntentUri = Uri.parse("geo:"+ mObservation.getLat() +","+ mObservation.getLng() +"?q="+ mObservation.getLat() +","+ mObservation.getLng() +"(" + mObservation.getNom() + ")");
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 mapIntent.setPackage("com.google.android.apps.maps");
-                startActivity(mapIntent);
+                startActivity(mapIntent);*/
+                ((OnPicMapClickListener) mContext).onPicMapClick(mObservation);
             }
         });
         String pos = mObservation.getLat() + "," + mObservation.getLng();
-        Picasso.with(mContext).load("https://maps.googleapis.com/maps/api/staticmap?center=" + pos + "&zoom=13&markers=" + pos + "&size=640x480&scale=2").centerCrop().fit().into(map);
+        String color;
+        if (mObservation.getObservateur().getId_user() == mUser.getId_user()) {
+            color = "green";
+        } else {
+            color = "blue";
+        }
+        Picasso.with(mContext).load("https://maps.googleapis.com/maps/api/staticmap?center=" + pos + "&zoom=16&markers=color:" + color + "%7C" + pos + "&size=640x480&scale=2").centerCrop().fit().into(map);
         mViewFlipper.addView(map);
 
         for (final ObservationPhoto photo : mObservation.getPhotos()) {
             final ImageView imageView = new ImageView(mContext);
-            imageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
-                    builder.setTitle("Supprimer cette image");
-                    builder.setMessage("Voulez-vous vraiment supprimer définitivement cette image ?");
-                    builder.setNegativeButton("Non", null);
-                    builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            final ProgressDialog dialogdel = ProgressDialog.show(mContext, "Suppression en cours", "Chargement, veuillez patienter...", true);
-                            MyPOVClient.client.deletePic(photo.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
-                                @Override
-                                public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
-                                    if (response.isSuccess()) {
-                                        if (response.body().getStatus() == 0) {
-                                            mViewFlipper.removeView(imageView);
-                                            Toast.makeText(mContext, "Photo supprimée", Toast.LENGTH_SHORT).show();
+            if (photo.getUtilisateur().getId_user() == mUser.getId_user()) {
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext, R.style.AlertDialogStyle);
+                        builder.setTitle("Supprimer cette image");
+                        builder.setMessage("Voulez-vous vraiment supprimer définitivement cette image ?");
+                        builder.setNegativeButton("Non", null);
+                        builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                final ProgressDialog dialogdel = ProgressDialog.show(mContext, "Suppression en cours", "Chargement, veuillez patienter...", true);
+                                MyPOVClient.client.deletePic(photo.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
+                                    @Override
+                                    public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
+                                        if (response.isSuccess()) {
+                                            if (response.body().getStatus() == 0) {
+                                                mViewFlipper.removeView(imageView);
+                                                Toast.makeText(mContext, "Photo supprimée", Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
+                                                mUser.logout();
+                                            }
                                         } else {
-                                            Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
-                                            mUser.logout();
+                                            Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
                                         }
-                                    } else {
-                                        Toast.makeText(mContext, response.code() + " - " + response.raw().message(), Toast.LENGTH_LONG).show();
+                                        dialogdel.cancel();
                                     }
-                                    dialogdel.cancel();
-                                }
 
-                                @Override
-                                public void onFailure(Throwable t) {
-                                    Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
-                                    dialogdel.cancel();
-                                }
-                            });
-                        }
-                    });
-                    builder.show();
-                }
-            });
+                                    @Override
+                                    public void onFailure(Throwable t) {
+                                        Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                                        dialogdel.cancel();
+                                    }
+                                });
+                            }
+                        });
+                        builder.show();
+                    }
+                });
+            }
             Picasso.with(mContext).load("https://mypov.fr/uploads/observations/" + mObservation.getId() + "/" + photo.getId() + "." + photo.getFormat()).centerCrop().fit().into(imageView);
             mViewFlipper.addView(imageView);
         }
@@ -166,7 +177,7 @@ public class ObservationDetailsContent extends BaseFragment {
         }
     }
 
-    private void getMyNotes() {
+    private void getMyNotes(final ProgressDialog dialogNote) {
         MyPOVClient.client.getNoteObservation(mObservation.getId(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<List<Note>>>() {
             @Override
             public void onResponse(Response<MyPOVResponse<List<Note>>> response, Retrofit retrofit) {
@@ -186,6 +197,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_infirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
+                                        final ProgressDialog dialogNote2 = ProgressDialog.show(mContext, "En cours", "Chargement, veuillez patienter...", true);
                                         MyPOVClient.client.delNoteObservation(mObservation.getId(), mUser.getId_user(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
                                             public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
@@ -193,7 +205,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                                 int newnote = Integer.parseInt(infirmation.getText().toString());
                                                 newnote--;
                                                 infirmation.setText(String.format("%d", newnote));
-                                                getMyNotes();
+                                                getMyNotes(dialogNote2);
                                             }
 
                                             @Override
@@ -206,6 +218,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_affirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
+                                        final ProgressDialog dialogNote2 = ProgressDialog.show(mContext, "En cours", "Chargement, veuillez patienter...", true);
                                         MyPOVClient.client.setNoteObservation(mObservation.getId(), mUser.getId_user(), 1, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
                                             public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
@@ -217,7 +230,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                                 affirmation.setText(String.format("%d", newnote2));
                                                 ((ImageView) view.findViewById(R.id.infirmer)).setColorFilter(Color.parseColor("#000000"));
                                                 ((ImageView) view.findViewById(R.id.affirmer)).setColorFilter(Color.parseColor("#298900"));
-                                                getMyNotes();
+                                                getMyNotes(dialogNote2);
                                             }
 
                                             @Override
@@ -232,6 +245,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_infirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
+                                        final ProgressDialog dialogNote2 = ProgressDialog.show(mContext, "En cours", "Chargement, veuillez patienter...", true);
                                         MyPOVClient.client.setNoteObservation(mObservation.getId(), mUser.getId_user(), 0, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
                                             public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
@@ -243,7 +257,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                                 affirmation.setText(String.format("%d", newnote2));
                                                 ((ImageView) view.findViewById(R.id.infirmer)).setColorFilter(Color.parseColor("#a50000"));
                                                 ((ImageView) view.findViewById(R.id.affirmer)).setColorFilter(Color.parseColor("#000000"));
-                                                getMyNotes();
+                                                getMyNotes(dialogNote2);
                                             }
 
                                             @Override
@@ -256,6 +270,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                 view.findViewById(R.id.observation_note_affirmer).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
+                                        final ProgressDialog dialogNote2 = ProgressDialog.show(mContext, "En cours", "Chargement, veuillez patienter...", true);
                                         MyPOVClient.client.delNoteObservation(mObservation.getId(), mUser.getId_user(), mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                                             @Override
                                             public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
@@ -263,7 +278,7 @@ public class ObservationDetailsContent extends BaseFragment {
                                                 newnote2--;
                                                 affirmation.setText(String.format("%d", newnote2));
                                                 ((ImageView) view.findViewById(R.id.affirmer)).setColorFilter(Color.parseColor("#000000"));
-                                                getMyNotes();
+                                                getMyNotes(dialogNote2);
                                             }
 
                                             @Override
@@ -274,10 +289,10 @@ public class ObservationDetailsContent extends BaseFragment {
                                     }
                                 });
                             } else {
-                                noNotes();
+                                noNotes(dialogNote);
                             }
                         } else {
-                            noNotes();
+                            noNotes(dialogNote);
                         }
                     } else {
                         Toast.makeText(mContext, response.body().getMessage(), Toast.LENGTH_LONG).show();
@@ -287,19 +302,26 @@ public class ObservationDetailsContent extends BaseFragment {
                 } else {
                     Toast.makeText(mContext, response.code() + " - " + response.message(), Toast.LENGTH_LONG).show();
                 }
+                if (dialogNote != null) {
+                    dialogNote.cancel();
+                }
             }
 
             @Override
             public void onFailure(Throwable t) {
                 Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                if (dialogNote != null) {
+                    dialogNote.cancel();
+                }
             }
         });
     }
 
-    private void noNotes() {
+    private void noNotes(ProgressDialog dialogNote) {
         view.findViewById(R.id.observation_note_infirmer).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final ProgressDialog dialogNote2 = ProgressDialog.show(mContext, "En cours", "Chargement, veuillez patienter...", true);
                 MyPOVClient.client.addNoteObservation(mObservation.getId(), mUser.getId_user(), 0, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
                     public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
@@ -308,12 +330,13 @@ public class ObservationDetailsContent extends BaseFragment {
                         infirmation.setText(String.format("%d", newnote));
                         ((ImageView) view.findViewById(R.id.infirmer)).setColorFilter(Color.parseColor("#a50000"));
                         ((ImageView) view.findViewById(R.id.affirmer)).setColorFilter(Color.parseColor("#000000"));
-                        getMyNotes();
+                        getMyNotes(dialogNote2);
                     }
 
                     @Override
                     public void onFailure(Throwable t) {
                         Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                        dialogNote2.cancel();
                     }
                 });
             }
@@ -321,6 +344,7 @@ public class ObservationDetailsContent extends BaseFragment {
         view.findViewById(R.id.observation_note_affirmer).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                final ProgressDialog dialogNote2 = ProgressDialog.show(mContext, "En cours", "Chargement, veuillez patienter...", true);
                 MyPOVClient.client.addNoteObservation(mObservation.getId(), mUser.getId_user(), 1, mUser.getMail(), mUser.getPassword()).enqueue(new Callback<MyPOVResponse<String>>() {
                     @Override
                     public void onResponse(Response<MyPOVResponse<String>> response, Retrofit retrofit) {
@@ -329,16 +353,20 @@ public class ObservationDetailsContent extends BaseFragment {
                         affirmation.setText(String.format("%d", newnote2));
                         ((ImageView) view.findViewById(R.id.infirmer)).setColorFilter(Color.parseColor("#000000"));
                         ((ImageView) view.findViewById(R.id.affirmer)).setColorFilter(Color.parseColor("#298900"));
-                        getMyNotes();
+                        getMyNotes(dialogNote2);
                     }
 
                     @Override
                     public void onFailure(Throwable t) {
                         Toast.makeText(mContext, t.getMessage(), Toast.LENGTH_LONG).show();
+                        dialogNote2.cancel();
                     }
                 });
             }
         });
+        if (dialogNote != null) {
+            dialogNote.cancel();
+        }
     }
 
     public void previous() {

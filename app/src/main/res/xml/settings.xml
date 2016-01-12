@@ -21,4 +21,40 @@
             android:summary="Cela vous déconnectera de l\'application tout en supprimant définitvement votre compte et vos observations." />
 
     </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_key_category_1"
+        android:title="À propos - La team">
+
+        <Preference
+            android:key="pref_about_iut"
+            android:title="Application"
+            android:summary="Application réalisée dans le cadre des projets tutorés du département informatique de l\'IUT de Laval." />
+
+        <Preference
+            android:key="pref_about_0"
+            android:title="Boleat Jules"
+            android:summary="https://www.linkedin.com/in/jules-boleat-873152106" />
+
+        <Preference
+            android:key="pref_about_1"
+            android:title="Charrier Jérémy"
+            android:summary="https://fr.linkedin.com/in/jérémy-charrier-33674b106" />
+
+        <Preference
+            android:key="pref_about_2"
+            android:title="Esnault Jules"
+            android:summary="https://juleno.fr/" />
+
+        <Preference
+            android:key="pref_about_3"
+            android:title="Quevit Valentin"
+            android:summary="https://valentin.quevit.fr/" />
+
+        <Preference
+            android:key="pref_about_4"
+            android:title="Sart Nathan"
+            android:summary="https://www.linkedin.com/in/nathan-sart-428800bb" />
+
+    </PreferenceCategory>
 </PreferenceScreen>

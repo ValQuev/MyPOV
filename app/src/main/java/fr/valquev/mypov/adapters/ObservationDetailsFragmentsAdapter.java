@@ -41,7 +41,7 @@ public class ObservationDetailsFragmentsAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        Log.v("TEST", "TITLE = " + mFragmentTitleList.get(position));
+        //Log.v("TEST", "TITLE = " + mFragmentTitleList.get(position));
         return mFragmentTitleList.get(position);
     }
 }

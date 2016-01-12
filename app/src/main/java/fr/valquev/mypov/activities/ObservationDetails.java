@@ -47,7 +47,7 @@ import retrofit.Retrofit;
 /**
  * Created by ValQuev on 27/09/15.
  */
-public class ObservationDetails extends AppCompatActivity {
+public class ObservationDetails extends AppCompatActivity implements OnPicMapClickListener {
 
     private static final int PICK_IMAGE = 100;
     private static final int NEW_LOCATION = 101;
@@ -453,5 +453,13 @@ public class ObservationDetails extends AppCompatActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return descriptionFrag.onTouchEvent(event);
+    }
+
+    @Override
+    public void onPicMapClick(Observation observation) {
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("observation", observation);
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();
     }
 }

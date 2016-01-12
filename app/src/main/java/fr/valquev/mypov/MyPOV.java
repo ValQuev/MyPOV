@@ -35,11 +35,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
 
 import fr.valquev.mypov.activities.Login;
+import fr.valquev.mypov.activities.ObservationDetails;
 import fr.valquev.mypov.fragments.ListeObservations;
 import fr.valquev.mypov.fragments.Map;
 import fr.valquev.mypov.fragments.Settings;
 
-public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, LocationListener, PositionMapCenter {
+public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, LocationListener, PositionMapCenter, OnObservationListItemClickListener {
 
     private static final long DRAWER_CLOSE_DELAY_MS = 0;
     private static final String NAV_ITEM_ID = "navItemId";
@@ -47,8 +48,10 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
     private static final float MIN_DISTANCE = 1000;
     public static final int ASK_COARSE_LOCATION_PERMISSION = 1;
     public static final int ASK_FINE_LOCATION_PERMISSION = 2;
+    public static final int OBSERVATION_CLICK = 666;
 
     private final Handler mDrawerActionHandler = new Handler();
+    private final Handler mDrawerActionHandlerMap = new Handler();
     private ActionBarDrawerToggle mDrawerToggle;
     private View headerView;
     private DrawerLayout mDrawerLayout;
@@ -306,9 +309,36 @@ public class MyPOV extends AppCompatActivity implements NavigationView.OnNavigat
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case OBSERVATION_CLICK:
+                if (resultCode == RESULT_OK) {
+                    final Observation observation = (Observation) data.getExtras().get("observation");
+                    onNavigationItemSelected(navigationView.getMenu().getItem(0));
+                    mDrawerActionHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mapFragment.setCameraPosition(new LatLng(observation.getLat(), observation.getLng()), 16);
+                        }
+                    }, DRAWER_CLOSE_DELAY_MS + 500);
+                }
+                break;
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
         outState.putInt(NAV_ITEM_ID, mNavItemId);
+    }
+
+    @Override
+    public void onObservationClick(Observation observation) {
+        Intent intent = new Intent(mContext, ObservationDetails.class);
+        intent.putExtra("observation", observation);
+        ((MyPOV) mContext).startActivityForResult(intent, MyPOV.OBSERVATION_CLICK);
     }
 }
