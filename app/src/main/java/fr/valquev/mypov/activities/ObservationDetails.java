@@ -30,11 +30,11 @@ import com.squareup.okhttp.RequestBody;
 import java.io.ByteArrayOutputStream;
 
 import fr.valquev.mypov.ImagePicker;
-import fr.valquev.mypov.MyPOV;
 import fr.valquev.mypov.MyPOVClient;
 import fr.valquev.mypov.MyPOVResponse;
 import fr.valquev.mypov.NoSwipeViewPager;
 import fr.valquev.mypov.Observation;
+import fr.valquev.mypov.OnPicMapClickListener;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.User;
 import fr.valquev.mypov.adapters.ObservationDetailsFragmentsAdapter;

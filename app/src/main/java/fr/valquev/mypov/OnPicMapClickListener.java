@@ -1,4 +1,4 @@
-package fr.valquev.mypov.activities;
+package fr.valquev.mypov;
 
 import fr.valquev.mypov.Observation;
 

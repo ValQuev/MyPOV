@@ -1,16 +1,12 @@
 package fr.valquev.mypov.fragments;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,7 +30,7 @@ import fr.valquev.mypov.ObservationPhoto;
 import fr.valquev.mypov.R;
 import fr.valquev.mypov.SwipeGestureListener;
 import fr.valquev.mypov.User;
-import fr.valquev.mypov.activities.OnPicMapClickListener;
+import fr.valquev.mypov.OnPicMapClickListener;
 import retrofit.Callback;
 import retrofit.Response;
 import retrofit.Retrofit;
